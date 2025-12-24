@@ -4,9 +4,11 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.github.niefy.config.TaskExcutor;
 import com.github.niefy.modules.wx.entity.MsgReplyRule;
+import com.github.niefy.modules.wx.entity.MsgSendProgress;
 import com.github.niefy.modules.wx.entity.WxMsg;
 import com.github.niefy.modules.wx.service.MsgReplyRuleService;
 import com.github.niefy.modules.wx.service.MsgReplyService;
+import com.github.niefy.modules.wx.service.MsgSendProgressService;
 import com.github.niefy.modules.wx.service.WxMsgService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -41,6 +45,8 @@ public class MsgReplyServiceImpl implements MsgReplyService {
     Long autoReplyInterval;
     @Autowired
     WxMsgService wxMsgService;
+    @Autowired
+    MsgSendProgressService msgSendProgressService;
 
     /**
      * 根据规则配置通过微信客服消息接口自动回复消息
@@ -55,6 +61,15 @@ public class MsgReplyServiceImpl implements MsgReplyService {
     @Override
     public boolean tryAutoReply(String appid, boolean exactMatch, String toUser, String keywords) {
         try {
+            // 先检查是否是继续发送的关键词
+            if (isContinueKeyword(keywords)) {
+                boolean continued = continueSending(toUser);
+                if (continued) {
+                    log.info("用户{}发送继续关键词，已继续发送未完成的消息", toUser);
+                    return true;
+                }
+            }
+            
             List<MsgReplyRule> rules = msgReplyRuleService.getMatchedRules(appid,exactMatch, keywords);
             if (rules.isEmpty()) {
                 return false;
@@ -72,6 +87,26 @@ public class MsgReplyServiceImpl implements MsgReplyService {
             log.error("自动回复出错：", e);
         }
         return false;
+    }
+
+    /**
+     * 检查是否是继续发送的关键词
+     * @param keywords 用户输入的关键词
+     * @return true表示是继续关键词
+     */
+    private boolean isContinueKeyword(String keywords) {
+        if (keywords == null || keywords.trim().isEmpty()) {
+            return false;
+        }
+        String lowerKeywords = keywords.toLowerCase().trim();
+        // 支持的继续关键词：继续、还有吗、还有、继续发送、继续发、还有吗？等
+        return lowerKeywords.contains("继续") 
+            || lowerKeywords.contains("还有") 
+            || lowerKeywords.equals("还有吗")
+            || lowerKeywords.equals("还有吗？")
+            || lowerKeywords.equals("还有吗?")
+            || lowerKeywords.contains("继续发送")
+            || lowerKeywords.contains("继续发");
     }
 
     @Override
@@ -195,9 +230,20 @@ public class MsgReplyServiceImpl implements MsgReplyService {
      * 3. 遇到 $VIDEO{{mediaId}} 格式，发送视频
      * 4. 其他内容作为文本发送
      * 5. 按照模板顺序逐行发送：文本块 -> 图片/视频 -> 文本块 -> 图片/视频...
+     * 6. 记录发送进度，支持断点续发
      */
     @Override
     public void replyMixed(String toUser, String mixedContent) throws WxErrorException {
+        replyMixed(toUser, mixedContent, 0);
+    }
+
+    /**
+     * 回复混合消息（支持从指定位置开始发送）
+     * @param toUser 用户openid
+     * @param mixedContent 混合内容
+     * @param startIndex 开始发送的位置（从0开始）
+     */
+    public void replyMixed(String toUser, String mixedContent, int startIndex) throws WxErrorException {
         if (mixedContent == null || mixedContent.trim().isEmpty()) {
             return;
         }
@@ -263,12 +309,21 @@ public class MsgReplyServiceImpl implements MsgReplyService {
             }
         }
 
+        // 计算内容hash，用于标识同一条消息
+        String contentHash = calculateContentHash(mixedContent);
+        String appid = wxMpService.getWxMpConfigStorage().getAppId();
+        
+        // 将消息项列表转换为JSON
+        String messageItemsJson = JSON.toJSONString(messageItems);
+        
         // 按照顺序逐行发送消息
         boolean shouldStop = false;
-        int sentCount = 0;
+        int sentCount = startIndex;
         int failedCount = 0;
         
-        for (MessageItem item : messageItems) {
+        // 从startIndex开始发送
+        for (int i = startIndex; i < messageItems.size(); i++) {
+            MessageItem item = messageItems.get(i);
             if (shouldStop) {
                 log.warn("已达到客服消息发送上限，停止发送剩余{}条消息", messageItems.size() - sentCount - failedCount);
                 break;
@@ -286,6 +341,11 @@ public class MsgReplyServiceImpl implements MsgReplyService {
                     log.debug("发送视频消息，mediaId: {}", item.content.substring(0, Math.min(20, item.content.length())));
                 }
                 sentCount++;
+                // 更新发送进度
+                int completed = (sentCount >= messageItems.size()) ? 1 : 0;
+                msgSendProgressService.saveOrUpdateProgress(contentHash, appid, toUser, 
+                    mixedContent, messageItemsJson, messageItems.size(), sentCount, completed);
+                
                 // 添加延迟，避免消息发送过快
                 Thread.sleep(autoReplyInterval);
             } catch (WxErrorException e) {
@@ -296,6 +356,9 @@ public class MsgReplyServiceImpl implements MsgReplyService {
                     log.error("客服接口下行条数超过上限（错误代码：45047），已发送{}条消息，停止发送剩余消息。错误信息：{}", 
                         sentCount, e.getMessage());
                     shouldStop = true;
+                    // 保存发送进度，标记为未完成
+                    msgSendProgressService.saveOrUpdateProgress(contentHash, appid, toUser, 
+                        mixedContent, messageItemsJson, messageItems.size(), sentCount, 0);
                     break;
                 }
                 // 其他错误（如mediaId无效或过期），记录错误但继续发送其他消息
@@ -311,8 +374,12 @@ public class MsgReplyServiceImpl implements MsgReplyService {
         }
         
         if (shouldStop) {
-            log.warn("由于达到发送上限，共发送{}条消息，失败{}条，剩余{}条未发送", 
+            log.warn("由于达到发送上限，共发送{}条消息，失败{}条，剩余{}条未发送。用户可发送'继续'或'还有吗'继续接收剩余消息", 
                 sentCount, failedCount, messageItems.size() - sentCount - failedCount);
+        } else {
+            // 发送完成，标记为已完成
+            msgSendProgressService.saveOrUpdateProgress(contentHash, appid, toUser, 
+                mixedContent, messageItemsJson, messageItems.size(), sentCount, 1);
         }
 
         // 记录混合消息日志
@@ -328,6 +395,99 @@ public class MsgReplyServiceImpl implements MsgReplyService {
         }
         json.put("messageItems", itemsJson);
         wxMsgService.addWxMsg(WxMsg.buildOutMsg("mixed", toUser, json));
+    }
+
+    /**
+     * 继续发送未完成的消息
+     * @param toUser 用户openid
+     * @return 是否找到未完成的消息并继续发送
+     */
+    public boolean continueSending(String toUser) {
+        try {
+            MsgSendProgress progress = msgSendProgressService.getLatestUncompletedProgress(toUser);
+            if (progress == null) {
+                log.debug("用户{}没有未完成的发送任务", toUser);
+                // 没有未完成的消息，回复提示文本
+                try {
+                    replyText(toUser, "今日已无更多图片视频！");
+                } catch (WxErrorException e) {
+                    log.error("发送提示文本失败", e);
+                }
+                return false;
+            }
+            
+            // 切换到对应的公众号
+            if (progress.getAppid() != null && !progress.getAppid().isEmpty()) {
+                wxMpService.switchover(progress.getAppid());
+            }
+            
+            log.info("继续发送用户{}的未完成消息，已发送{}/{}条", toUser, progress.getSentCount(), progress.getTotalCount());
+            
+            // 解析消息项列表
+            List<MessageItem> messageItems = JSON.parseArray(progress.getMessageItems(), MessageItem.class);
+            if (messageItems == null || messageItems.isEmpty()) {
+                log.warn("消息项列表为空，无法继续发送");
+                // 标记为已完成，并回复提示文本
+                try {
+                    msgSendProgressService.saveOrUpdateProgress(progress.getContentHash(), progress.getAppid(), 
+                        toUser, progress.getOriginalContent(), progress.getMessageItems(), 
+                        progress.getTotalCount(), progress.getSentCount(), 1);
+                    replyText(toUser, "今日已无更多图片视频！");
+                } catch (WxErrorException e) {
+                    log.error("发送提示文本失败", e);
+                }
+                return false;
+            }
+            
+            // 检查是否已经全部发送完成
+            if (progress.getSentCount() >= progress.getTotalCount()) {
+                log.info("消息已全部发送完成，标记为已完成");
+                msgSendProgressService.saveOrUpdateProgress(progress.getContentHash(), progress.getAppid(), 
+                    toUser, progress.getOriginalContent(), progress.getMessageItems(), 
+                    progress.getTotalCount(), progress.getSentCount(), 1);
+                // 回复提示文本
+                try {
+                    replyText(toUser, "今日已无更多图片视频！");
+                } catch (WxErrorException e) {
+                    log.error("发送提示文本失败", e);
+                }
+                return false;
+            }
+            
+            // 从断点继续发送
+            replyMixed(toUser, progress.getOriginalContent(), progress.getSentCount());
+            return true;
+        } catch (Exception e) {
+            log.error("继续发送消息失败", e);
+            // 发生异常时，也尝试回复提示文本
+            try {
+                replyText(toUser, "今日已无更多图片视频！");
+            } catch (WxErrorException ex) {
+                log.error("发送提示文本失败", ex);
+            }
+            return false;
+        }
+    }
+
+    /**
+     * 计算内容hash值
+     * @param content 消息内容
+     * @return hash值（MD5）
+     */
+    private String calculateContentHash(String content) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] hashBytes = md.digest(content.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashBytes) {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } catch (Exception e) {
+            log.error("计算内容hash失败", e);
+            // 如果计算失败，使用内容的hashCode作为备用
+            return String.valueOf(content.hashCode());
+        }
     }
 
     /**
