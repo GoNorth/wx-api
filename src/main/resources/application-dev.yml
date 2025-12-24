@@ -1,16 +1,19 @@
 spring:
     datasource:
         driver-class-name: com.mysql.cj.jdbc.Driver
-        url: jdbc:mysql://${MYSQL_IP:localhost}:${MYSQL_PORT:3306}/wx?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false
+        url: jdbc:mysql://${MYSQL_IP:192.168.1.188}:${MYSQL_PORT:3306}/wx?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false
         username: ${MYSQL_USERNAME:root}
         password: ${MYSQL_PASSWORD:123456}
     redis:
         host: ${REDIS_IP:localhost}
         database: ${REDIS_DATABASE:1}
-        port: ${REDIS_PORT:3306}
+        port: ${REDIS_PORT:6379}
         password: ${REDIS_PASSWORD:''}
 
 springfox:
     documentation:
         swagger-ui:
             enabled: true
+
+#redis本地启动
+#https://www.runoob.com/docker/docker-install-redis.html
