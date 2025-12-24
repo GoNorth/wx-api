@@ -85,4 +85,25 @@ public interface WxAssetsService {
      * @throws WxErrorException
      */
     boolean materialDelete(String appid, String mediaId)throws WxErrorException;
+
+    /**
+     * 添加多媒体临时素材
+     *
+     * @param appid
+     * @param mediaType
+     * @param fileName
+     * @param file
+     * @return
+     * @throws WxErrorException
+     */
+    com.github.niefy.modules.wx.dto.TempMediaUploadResult tempMediaUpload(String appid, String mediaType, String fileName, MultipartFile file) throws WxErrorException, IOException;
+
+    /**
+     * 删除临时素材（仅删除本地数据库记录，微信临时素材3天后自动失效）
+     *
+     * @param appid
+     * @param mediaId
+     * @return
+     */
+    boolean tempMediaDelete(String appid, String mediaId);
 }

@@ -163,4 +163,40 @@ public class WxAssetsManageController {
         return R.ok().put(res);
     }
 
+    /**
+     * 添加多媒体临时素材
+     *
+     * @param file
+     * @param fileName
+     * @param mediaType
+     * @return
+     * @throws WxErrorException
+     * @throws IOException
+     */
+    @PostMapping("/tempMediaUpload")
+    @RequiresPermissions("wx:wxassets:save")
+    @ApiOperation(value = "添加多媒体临时素材")
+    public R tempMediaUpload(@CookieValue String appid, MultipartFile file, String fileName, String mediaType) throws WxErrorException, IOException {
+        if (file == null) {
+            return R.error("文件不得为空");
+        }
+
+        com.github.niefy.modules.wx.dto.TempMediaUploadResult res = wxAssetsService.tempMediaUpload(appid, mediaType, fileName, file);
+        return R.ok().put(res);
+    }
+
+    /**
+     * 删除临时素材（仅删除本地数据库记录，微信临时素材3天后自动失效）
+     *
+     * @param form
+     * @return
+     */
+    @PostMapping("/tempMediaDelete")
+    @RequiresPermissions("wx:wxassets:delete")
+    @ApiOperation(value = "删除临时素材")
+    public R tempMediaDelete(@CookieValue String appid, @RequestBody MaterialFileDeleteForm form) {
+        boolean res = wxAssetsService.tempMediaDelete(appid, form.getMediaId());
+        return R.ok().put(res);
+    }
+
 }
