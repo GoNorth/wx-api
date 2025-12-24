@@ -27,6 +27,13 @@ public interface MsgReplyService {
 
     default void reply(String toUser,String replyType, String replyContent){
         try {
+            // 自动检测：如果replyType是image但内容包含多个mediaId和文本，自动转换为mixed类型
+            if (WxConsts.KefuMsgType.IMAGE.equals(replyType) && isMixedContent(replyContent)) {
+                logger.info("检测到混合消息内容，自动转换为mixed类型");
+                this.replyMixed(toUser, replyContent);
+                return;
+            }
+            
             if (WxConsts.KefuMsgType.TEXT.equals(replyType)) {
                 this.replyText(toUser, replyContent);
             } else if (WxConsts.KefuMsgType.IMAGE.equals(replyType)) {
@@ -47,10 +54,52 @@ public interface MsgReplyService {
                 this.replyMiniProgram(toUser, replyContent);
             } else if (WxConsts.KefuMsgType.MSGMENU.equals(replyType)) {
                 this.replyMsgMenu(toUser, replyContent);
+            } else if ("mixed".equals(replyType)) {
+                // 混合消息类型：包含文本和多个媒体文件
+                this.replyMixed(toUser, replyContent);
             }
         } catch (Exception e) {
             logger.error("自动回复出错：", e);
         }
+    }
+
+    /**
+     * 检测内容是否为混合消息（包含文本和多个mediaId）
+     * @param content 消息内容
+     * @return true表示是混合消息
+     */
+    default boolean isMixedContent(String content) {
+        if (content == null || content.trim().isEmpty()) {
+            return false;
+        }
+        
+        // 优先检查新格式：$IMAGE{{...}} 或 $VIDEO{{...}}
+        java.util.regex.Pattern newFormatPattern = java.util.regex.Pattern.compile("\\$(IMAGE|VIDEO)\\{\\{[^}]+\\}\\}");
+        if (newFormatPattern.matcher(content).find()) {
+            return true;
+        }
+        
+        // 兼容旧格式：匹配mediaId的正则表达式：60-70位字符
+        java.util.regex.Pattern mediaIdPattern = java.util.regex.Pattern.compile("\\b([A-Za-z0-9_-]{60,70})\\b");
+        java.util.regex.Matcher matcher = mediaIdPattern.matcher(content);
+        
+        int mediaIdCount = 0;
+        while (matcher.find()) {
+            mediaIdCount++;
+            if (mediaIdCount >= 2) {
+                // 如果找到2个或更多mediaId，且内容长度明显超过单个mediaId，则认为是混合消息
+                return true;
+            }
+        }
+        
+        // 如果找到1个mediaId，但内容包含明显的文本（长度超过100字符或包含换行），也可能是混合消息
+        if (mediaIdCount == 1 && content.length() > 100) {
+            // 检查是否包含明显的文本内容（去除mediaId后的长度）
+            String withoutMediaId = content.replaceAll("\\b[A-Za-z0-9_-]{60,70}\\b", "").trim();
+            return withoutMediaId.length() > 20; // 如果去除mediaId后还有20个字符以上的文本，认为是混合消息
+        }
+        
+        return false;
     }
 
     /**
@@ -104,4 +153,15 @@ public interface MsgReplyService {
      * 回复菜单消息
      */
     void replyMsgMenu(String toUser, String msgMenusJson) throws WxErrorException;
+
+    /**
+     * 回复混合消息（包含文本和多个媒体文件）
+     * 格式：文本内容中可以包含多个mediaId，系统会自动识别并分别发送
+     * mediaId格式：64位字符的字符串（微信媒体ID标准格式）
+     * 注意：由于微信限制，文本和媒体文件需要分别发送多条消息
+     * @param toUser 用户openid
+     * @param mixedContent 混合内容，包含文本和mediaId
+     * @throws WxErrorException
+     */
+    void replyMixed(String toUser, String mixedContent) throws WxErrorException;
 }
