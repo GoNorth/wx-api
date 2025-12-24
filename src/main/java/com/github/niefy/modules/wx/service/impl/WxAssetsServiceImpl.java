@@ -1,6 +1,9 @@
 package com.github.niefy.modules.wx.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.github.niefy.modules.wx.dao.WxMaterialMapper;
 import com.github.niefy.modules.wx.dto.PageSizeConstant;
+import com.github.niefy.modules.wx.entity.WxMaterial;
 import com.github.niefy.modules.wx.service.WxAssetsService;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.api.WxConsts;
@@ -18,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,6 +31,9 @@ import java.util.Objects;
 public class WxAssetsServiceImpl implements WxAssetsService {
     @Autowired
     WxMpService wxMpService;
+    
+    @Autowired
+    WxMaterialMapper wxMaterialMapper;
 
     @Override
     @Cacheable(key="methodName+ #appid")
@@ -107,6 +114,43 @@ public class WxAssetsServiceImpl implements WxAssetsService {
         }
         WxMpMaterialUploadResult res = wxMpService.getMaterialService().materialFileUpload(mediaType,wxMaterial);
         tempFile.deleteOnExit();
+        
+        // 同步保存到本地数据库
+        if (res != null && res.getMediaId() != null) {
+            try {
+                WxMaterial material = new WxMaterial();
+                material.setAppid(appid);
+                material.setEnterpriseId(null); // 接口中为空
+                material.setForDate(null); // 接口中为空
+                material.setMediaStore("Perm"); // 根据接口决定：materialFileUpload是永久素材接口
+                material.setMediaId(res.getMediaId());
+                material.setMediaType(mediaType);
+                material.setFileName(fileName);
+                material.setUrl(res.getUrl()); // 图片和视频会有URL
+                material.setCreateTime(new Date());
+                
+                // 检查是否已存在，避免重复插入
+                LambdaQueryWrapper<WxMaterial> wrapper = new LambdaQueryWrapper<>();
+                wrapper.eq(WxMaterial::getAppid, appid)
+                       .eq(WxMaterial::getMediaId, res.getMediaId());
+                WxMaterial existMaterial = wxMaterialMapper.selectOne(wrapper);
+                
+                if (existMaterial == null) {
+                    wxMaterialMapper.insert(material);
+                    log.info("素材已保存到本地数据库，mediaId={}", res.getMediaId());
+                } else {
+                    // 如果已存在，更新信息
+                    material.setId(existMaterial.getId());
+                    material.setUpdateTime(new Date());
+                    wxMaterialMapper.updateById(material);
+                    log.info("素材信息已更新到本地数据库，mediaId={}", res.getMediaId());
+                }
+            } catch (Exception e) {
+                log.error("保存素材到本地数据库失败，mediaId={}", res.getMediaId(), e);
+                // 不影响主流程，只记录错误日志
+            }
+        }
+        
         return res;
     }
 
@@ -115,6 +159,26 @@ public class WxAssetsServiceImpl implements WxAssetsService {
     public boolean materialDelete(String appid, String mediaId) throws WxErrorException {
         log.info("删除素材，mediaId={}",mediaId);
         wxMpService.switchoverTo(appid);
-        return wxMpService.getMaterialService().materialDelete(mediaId);
+        boolean result = wxMpService.getMaterialService().materialDelete(mediaId);
+        
+        // 同步删除本地数据库记录
+        if (result) {
+            try {
+                LambdaQueryWrapper<WxMaterial> wrapper = new LambdaQueryWrapper<>();
+                wrapper.eq(WxMaterial::getAppid, appid)
+                       .eq(WxMaterial::getMediaId, mediaId);
+                int deleteCount = wxMaterialMapper.delete(wrapper);
+                if (deleteCount > 0) {
+                    log.info("素材已从本地数据库删除，mediaId={}", mediaId);
+                } else {
+                    log.warn("本地数据库未找到对应素材记录，mediaId={}", mediaId);
+                }
+            } catch (Exception e) {
+                log.error("从本地数据库删除素材失败，mediaId={}", mediaId, e);
+                // 不影响主流程，只记录错误日志
+            }
+        }
+        
+        return result;
     }
 }
