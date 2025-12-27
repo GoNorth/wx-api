@@ -1,0 +1,261 @@
+{
+  "description": "BizPlanItem save API 请求和响应示例",
+  "api": {
+    "method": "POST",
+    "url": "/manage/bizPlanItem/save",
+    "contentType": "application/json",
+    "description": "保存或更新计划项目（根据itemId是否存在判断是新增还是修改）"
+  },
+  "requestParameters": {
+    "description": "请求体为 JSON 格式，所有参数通过 @RequestBody 传递",
+    "itemId": {
+      "type": "String",
+      "required": false,
+      "description": "计划项目ID，不传则自动生成UUID（新增），传入且存在则更新",
+      "example": "ITEM_001"
+    },
+    "planId": {
+      "type": "String",
+      "required": true,
+      "description": "计划头部ID，关联到 biz_plan_header 表",
+      "example": "PLAN_001"
+    },
+    "dateKey": {
+      "type": "String",
+      "required": true,
+      "description": "日期键：图片计划为YYYY-MM-DD，视频计划为WEEK1-WEEK4",
+      "example": "2024-12-27",
+      "format": "图片计划：YYYY-MM-DD（如：2024-12-27），视频计划：WEEK1-WEEK4"
+    },
+    "timeSlot": {
+      "type": "String",
+      "required": false,
+      "description": "时段字典CODE",
+      "enum": ["ALL", "BREAKFAST", "LUNCH", "AFTERNOON", "DINNER"],
+      "example": "LUNCH"
+    },
+    "marketingTheme": {
+      "type": "String",
+      "required": false,
+      "description": "营销主题字典CODE",
+      "enum": ["MEMBER", "DISCOUNT", "NEWPRODUCT", "GROUPBUY", "HOLIDAY", "REFERRAL"],
+      "example": "DISCOUNT"
+    },
+    "platform": {
+      "type": "String",
+      "required": false,
+      "description": "发布平台字典CODE，公域获客时使用",
+      "enum": ["DOUYIN", "MEITUAN", "XIAOHONGSHU", "WECHAT"],
+      "example": "DOUYIN"
+    },
+    "contentTag": {
+      "type": "String",
+      "required": false,
+      "description": "内容类型标签字典CODE，公域获客时使用",
+      "enum": ["SHORTVIDEO", "GROUPBUY", "STOREVISIT", "NEWPRODUCT"],
+      "example": "SHORTVIDEO"
+    },
+    "productName": {
+      "type": "String",
+      "required": false,
+      "description": "产品名称",
+      "example": "招牌牛肉面"
+    },
+    "originalPrice": {
+      "type": "BigDecimal",
+      "required": false,
+      "description": "原价",
+      "example": 38.00
+    },
+    "discountPrice": {
+      "type": "BigDecimal",
+      "required": false,
+      "description": "优惠价",
+      "example": 28.00
+    },
+    "activityDetails": {
+      "type": "String",
+      "required": false,
+      "description": "活动详情与规则",
+      "example": "午餐时段特价，限时优惠10元，仅限今日"
+    },
+    "status": {
+      "type": "Integer",
+      "required": false,
+      "description": "状态字典CODE：0-INIT初始待生成，1-CONFIRMING修改确认中，2-SUBMITTED已提交，3-EXECUTED已执行，4-DELIVERED已下发，5-CANCELLED已取消",
+      "default": 0,
+      "enum": [0, 1, 2, 3, 4, 5],
+      "example": 0
+    },
+    "submittedAt": {
+      "type": "Date",
+      "required": false,
+      "description": "提交时间",
+      "format": "yyyy-MM-dd HH:mm:ss",
+      "example": "2024-12-27 10:30:00"
+    },
+    "executedAt": {
+      "type": "Date",
+      "required": false,
+      "description": "执行时间",
+      "format": "yyyy-MM-dd HH:mm:ss",
+      "example": "2024-12-27 11:00:00"
+    },
+    "deliveredAt": {
+      "type": "Date",
+      "required": false,
+      "description": "下发用户时间",
+      "format": "yyyy-MM-dd HH:mm:ss",
+      "example": "2024-12-27 12:00:00"
+    }
+  },
+  "requestExamples": {
+    "example1_new": {
+      "description": "新增计划项目（不传itemId）",
+      "url": "POST /manage/bizPlanItem/save",
+      "requestBody": {
+        "planId": "PLAN_001",
+        "dateKey": "2024-12-27",
+        "timeSlot": "LUNCH",
+        "marketingTheme": "DISCOUNT",
+        "platform": "DOUYIN",
+        "contentTag": "SHORTVIDEO",
+        "productName": "招牌牛肉面",
+        "originalPrice": 38.00,
+        "discountPrice": 28.00,
+        "activityDetails": "午餐时段特价，限时优惠10元，仅限今日",
+        "status": 0
+      },
+      "curl": "curl -X POST \"http://localhost:8080/manage/bizPlanItem/save\" -H \"Content-Type: application/json\" -d '{\"planId\":\"PLAN_001\",\"dateKey\":\"2024-12-27\",\"timeSlot\":\"LUNCH\",\"marketingTheme\":\"DISCOUNT\",\"platform\":\"DOUYIN\",\"contentTag\":\"SHORTVIDEO\",\"productName\":\"招牌牛肉面\",\"originalPrice\":38.00,\"discountPrice\":28.00,\"activityDetails\":\"午餐时段特价，限时优惠10元，仅限今日\",\"status\":0}'"
+    },
+    "example2_update": {
+      "description": "更新计划项目（传入itemId）",
+      "url": "POST /manage/bizPlanItem/save",
+      "requestBody": {
+        "itemId": "ITEM_001",
+        "planId": "PLAN_001",
+        "dateKey": "2024-12-28",
+        "timeSlot": "DINNER",
+        "marketingTheme": "NEWPRODUCT",
+        "platform": "WECHAT",
+        "productName": "新品小龙虾",
+        "originalPrice": 88.00,
+        "discountPrice": 68.00,
+        "activityDetails": "新品上市，首周特惠20元",
+        "status": 1
+      },
+      "curl": "curl -X POST \"http://localhost:8080/manage/bizPlanItem/save\" -H \"Content-Type: application/json\" -d '{\"itemId\":\"ITEM_001\",\"planId\":\"PLAN_001\",\"dateKey\":\"2024-12-28\",\"timeSlot\":\"DINNER\",\"marketingTheme\":\"NEWPRODUCT\",\"platform\":\"WECHAT\",\"productName\":\"新品小龙虾\",\"originalPrice\":88.00,\"discountPrice\":68.00,\"activityDetails\":\"新品上市，首周特惠20元\",\"status\":1}'"
+    },
+    "example3_minimal": {
+      "description": "最小化请求（仅必填字段）",
+      "url": "POST /manage/bizPlanItem/save",
+      "requestBody": {
+        "planId": "PLAN_001",
+        "dateKey": "2024-12-27"
+      },
+      "curl": "curl -X POST \"http://localhost:8080/manage/bizPlanItem/save\" -H \"Content-Type: application/json\" -d '{\"planId\":\"PLAN_001\",\"dateKey\":\"2024-12-27\"}'"
+    },
+    "example4_videoPlan": {
+      "description": "视频计划项目（dateKey使用WEEK格式）",
+      "url": "POST /manage/bizPlanItem/save",
+      "requestBody": {
+        "planId": "PLAN_002",
+        "dateKey": "WEEK1",
+        "timeSlot": "BREAKFAST",
+        "marketingTheme": "MEMBER",
+        "platform": "XIAOHONGSHU",
+        "contentTag": "STOREVISIT",
+        "productName": "会员早餐套餐",
+        "originalPrice": 25.00,
+        "discountPrice": 20.00,
+        "activityDetails": "会员专享早餐套餐，每周一特价",
+        "status": 0
+      },
+      "curl": "curl -X POST \"http://localhost:8080/manage/bizPlanItem/save\" -H \"Content-Type: application/json\" -d '{\"planId\":\"PLAN_002\",\"dateKey\":\"WEEK1\",\"timeSlot\":\"BREAKFAST\",\"marketingTheme\":\"MEMBER\",\"platform\":\"XIAOHONGSHU\",\"contentTag\":\"STOREVISIT\",\"productName\":\"会员早餐套餐\",\"originalPrice\":25.00,\"discountPrice\":20.00,\"activityDetails\":\"会员专享早餐套餐，每周一特价\",\"status\":0}'"
+    },
+    "example5_publicDomain": {
+      "description": "公域获客计划项目（包含platform和contentTag）",
+      "url": "POST /manage/bizPlanItem/save",
+      "requestBody": {
+        "planId": "PLAN_003",
+        "dateKey": "2024-12-27",
+        "timeSlot": "ALL",
+        "marketingTheme": "GROUPBUY",
+        "platform": "MEITUAN",
+        "contentTag": "GROUPBUY",
+        "productName": "双人套餐",
+        "originalPrice": 158.00,
+        "discountPrice": 128.00,
+        "activityDetails": "双人套餐团购价，限时3天",
+        "status": 0
+      },
+      "curl": "curl -X POST \"http://localhost:8080/manage/bizPlanItem/save\" -H \"Content-Type: application/json\" -d '{\"planId\":\"PLAN_003\",\"dateKey\":\"2024-12-27\",\"timeSlot\":\"ALL\",\"marketingTheme\":\"GROUPBUY\",\"platform\":\"MEITUAN\",\"contentTag\":\"GROUPBUY\",\"productName\":\"双人套餐\",\"originalPrice\":158.00,\"discountPrice\":128.00,\"activityDetails\":\"双人套餐团购价，限时3天\",\"status\":0}'"
+    }
+  },
+  "responseStructure": {
+    "code": {
+      "type": "Integer",
+      "description": "响应码，200表示成功",
+      "example": 200
+    },
+    "msg": {
+      "type": "String",
+      "description": "响应消息",
+      "example": "success"
+    }
+  },
+  "responseExamples": {
+    "success": {
+      "code": 200,
+      "msg": "success"
+    },
+    "error": {
+      "code": 500,
+      "msg": "计划头部ID不得为空"
+    }
+  },
+  "logicDescription": {
+    "new": {
+      "condition": "itemId 为空或不存在",
+      "action": [
+        "自动生成 UUID 作为 itemId",
+        "设置默认值：deleted=0, status=0（如果未传）",
+        "设置 createTime 和 updateTime",
+        "保存为新记录"
+      ]
+    },
+    "update": {
+      "condition": "itemId 存在且数据库中有对应记录",
+      "action": [
+        "查询数据库获取现有记录",
+        "用传入参数覆盖现有记录",
+        "保留原有的 createTime",
+        "更新 updateTime 为当前时间",
+        "保存更新后的记录"
+      ]
+    },
+    "createWithId": {
+      "condition": "itemId 存在但数据库中无对应记录",
+      "action": [
+        "使用传入的 itemId",
+        "设置默认值：deleted=0, status=0（如果未传）",
+        "设置 createTime 和 updateTime",
+        "保存为新记录"
+      ]
+    }
+  },
+  "notes": [
+    "itemId 如果不传，系统会自动生成 UUID",
+    "planId 和 dateKey 是必填字段",
+    "更新时会保留原有的 createTime，只更新 updateTime",
+    "status 默认值为 0（初始待生成）",
+    "deleted 默认值为 0（未删除）",
+    "dateKey 格式：图片计划使用 YYYY-MM-DD（如：2024-12-27），视频计划使用 WEEK1-WEEK4",
+    "timeSlot 时段：ALL-全天，BREAKFAST-早餐，LUNCH-午餐，AFTERNOON-下午，DINNER-晚餐",
+    "marketingTheme 营销主题：MEMBER-会员，DISCOUNT-折扣，NEWPRODUCT-新品，GROUPBUY-团购，HOLIDAY-节日，REFERRAL-推荐",
+    "platform 发布平台：DOUYIN-抖音，MEITUAN-美团，XIAOHONGSHU-小红书，WECHAT-微信",
+    "contentTag 内容标签：SHORTVIDEO-短视频，GROUPBUY-团购，STOREVISIT-到店，NEWPRODUCT-新品",
+    "status 状态：0-初始待生成，1-修改确认中，2-已提交，3-已执行，4-已下发，5-已取消"
+  ]
+}
+

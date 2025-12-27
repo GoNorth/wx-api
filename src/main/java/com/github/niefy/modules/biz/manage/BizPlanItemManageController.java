@@ -49,24 +49,16 @@ public class BizPlanItemManageController {
     }
 
     /**
-     * 保存
+     * 保存或更新计划项目
+     * 根据是否有itemId判断是新增还是修改：
+     * - 如果itemId为空或不存在，则新增
+     * - 如果itemId存在且数据库中有记录，则更新（保留创建时间）
      */
     @PostMapping("/save")
     // @RequiresPermissions("biz:bizplanitem:save")
-    @ApiOperation(value = "保存")
+    @ApiOperation(value = "保存或更新计划项目")
     public R save(@RequestBody BizPlanItem bizPlanItem) {
-        bizPlanItemService.save(bizPlanItem);
-        return R.ok();
-    }
-
-    /**
-     * 修改
-     */
-    @PostMapping("/update")
-    // @RequiresPermissions("biz:bizplanitem:update")
-    @ApiOperation(value = "修改")
-    public R update(@RequestBody BizPlanItem bizPlanItem) {
-        bizPlanItemService.updateById(bizPlanItem);
+        bizPlanItemService.saveOrUpdateItem(bizPlanItem);
         return R.ok();
     }
 

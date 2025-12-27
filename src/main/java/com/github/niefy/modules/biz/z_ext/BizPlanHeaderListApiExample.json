@@ -1,0 +1,287 @@
+{
+  "description": "BizPlanHeader list API 请求和响应示例",
+  "api": {
+    "method": "GET",
+    "url": "/manage/bizPlanHeader/list",
+    "description": "分页查询计划头部列表"
+  },
+  "requestParameters": {
+    "description": "所有参数均为可选，通过 Query Parameters 传递",
+    "pagination": {
+      "page": {
+        "type": "String",
+        "required": false,
+        "description": "页码，从1开始",
+        "default": "1",
+        "example": "1"
+      },
+      "limit": {
+        "type": "String",
+        "required": false,
+        "description": "每页记录数",
+        "default": "10",
+        "example": "10"
+      },
+      "sidx": {
+        "type": "String",
+        "required": false,
+        "description": "排序字段（字段名）",
+        "example": "createTime"
+      },
+      "order": {
+        "type": "String",
+        "required": false,
+        "description": "排序方式：asc-升序，desc-降序",
+        "enum": ["asc", "desc"],
+        "example": "desc"
+      }
+    },
+    "queryFilters": {
+      "planId": {
+        "type": "String",
+        "required": false,
+        "description": "计划ID（精确匹配）",
+        "example": "PLAN_001"
+      },
+      "storeId": {
+        "type": "String",
+        "required": false,
+        "description": "门店ID（精确匹配）",
+        "example": "STORE_001"
+      },
+      "planType": {
+        "type": "String",
+        "required": false,
+        "description": "计划类型：1-IMAGE图片计划，2-VIDEO视频计划",
+        "enum": ["1", "2"],
+        "example": "1"
+      },
+      "strategyType": {
+        "type": "String",
+        "required": false,
+        "description": "策略类型：1-PRIVATE_DOMAIN私域复购，2-PUBLIC_DOMAIN公域获客",
+        "enum": ["1", "2"],
+        "example": "1"
+      },
+      "status": {
+        "type": "String",
+        "required": false,
+        "description": "状态：0-INIT初始待生成，1-CONFIRMING修改确认中，2-SUBMITTED已提交，3-EXECUTED已执行，4-DELIVERED已下发，5-CANCELLED已取消",
+        "enum": ["0", "1", "2", "3", "4", "5"],
+        "example": "2"
+      },
+      "planName": {
+        "type": "String",
+        "required": false,
+        "description": "计划名称（模糊匹配）",
+        "example": "春节营销"
+      }
+    }
+  },
+  "requestExamples": {
+    "example1_basic": {
+      "description": "基础查询 - 查询第1页，每页10条",
+      "url": "/manage/bizPlanHeader/list?page=1&limit=10",
+      "curl": "curl -X GET \"http://localhost:8080/manage/bizPlanHeader/list?page=1&limit=10\""
+    },
+    "example2_withFilters": {
+      "description": "带筛选条件 - 查询指定门店的图片计划",
+      "url": "/manage/bizPlanHeader/list?page=1&limit=10&storeId=STORE_001&planType=1",
+      "curl": "curl -X GET \"http://localhost:8080/manage/bizPlanHeader/list?page=1&limit=10&storeId=STORE_001&planType=1\""
+    },
+    "example3_withStatus": {
+      "description": "查询已提交的计划",
+      "url": "/manage/bizPlanHeader/list?page=1&limit=10&status=2",
+      "curl": "curl -X GET \"http://localhost:8080/manage/bizPlanHeader/list?page=1&limit=10&status=2\""
+    },
+    "example4_withSort": {
+      "description": "按创建时间倒序查询",
+      "url": "/manage/bizPlanHeader/list?page=1&limit=10&sidx=createTime&order=desc",
+      "curl": "curl -X GET \"http://localhost:8080/manage/bizPlanHeader/list?page=1&limit=10&sidx=createTime&order=desc\""
+    },
+    "example5_complex": {
+      "description": "复杂查询 - 查询指定门店的私域复购计划，按创建时间倒序",
+      "url": "/manage/bizPlanHeader/list?page=1&limit=20&storeId=STORE_001&strategyType=1&status=2&sidx=createTime&order=desc",
+      "curl": "curl -X GET \"http://localhost:8080/manage/bizPlanHeader/list?page=1&limit=20&storeId=STORE_001&strategyType=1&status=2&sidx=createTime&order=desc\""
+    }
+  },
+  "responseStructure": {
+    "code": {
+      "type": "Integer",
+      "description": "响应码，200表示成功",
+      "example": 200
+    },
+    "msg": {
+      "type": "String",
+      "description": "响应消息",
+      "example": "success"
+    },
+    "page": {
+      "type": "PageUtils",
+      "description": "分页信息",
+      "properties": {
+        "totalCount": {
+          "type": "Integer",
+          "description": "总记录数",
+          "example": 25
+        },
+        "pageSize": {
+          "type": "Integer",
+          "description": "每页记录数",
+          "example": 10
+        },
+        "totalPage": {
+          "type": "Integer",
+          "description": "总页数",
+          "example": 3
+        },
+        "currPage": {
+          "type": "Integer",
+          "description": "当前页数",
+          "example": 1
+        },
+        "list": {
+          "type": "Array<BizPlanHeader>",
+          "description": "计划头部列表数据",
+          "items": {
+            "planId": {
+              "type": "String",
+              "description": "计划ID",
+              "example": "PLAN_001"
+            },
+            "storeId": {
+              "type": "String",
+              "description": "门店ID",
+              "example": "STORE_001"
+            },
+            "planType": {
+              "type": "Integer",
+              "description": "计划类型：1-IMAGE图片计划，2-VIDEO视频计划",
+              "example": 1
+            },
+            "strategyType": {
+              "type": "Integer",
+              "description": "策略类型：1-PRIVATE_DOMAIN私域复购，2-PUBLIC_DOMAIN公域获客",
+              "example": 1
+            },
+            "planName": {
+              "type": "String",
+              "description": "计划名称",
+              "example": "春节营销计划"
+            },
+            "status": {
+              "type": "Integer",
+              "description": "状态：0-INIT初始待生成，1-CONFIRMING修改确认中，2-SUBMITTED已提交，3-EXECUTED已执行，4-DELIVERED已下发，5-CANCELLED已取消",
+              "example": 2
+            },
+            "submittedAt": {
+              "type": "Date",
+              "description": "提交时间",
+              "example": "2024-12-27 10:30:00",
+              "format": "yyyy-MM-dd HH:mm:ss"
+            },
+            "executedAt": {
+              "type": "Date",
+              "description": "执行时间",
+              "example": "2024-12-27 11:00:00",
+              "format": "yyyy-MM-dd HH:mm:ss"
+            },
+            "deliveredAt": {
+              "type": "Date",
+              "description": "下发用户时间",
+              "example": "2024-12-27 12:00:00",
+              "format": "yyyy-MM-dd HH:mm:ss"
+            },
+            "createTime": {
+              "type": "Date",
+              "description": "创建时间",
+              "example": "2024-12-27 09:00:00",
+              "format": "yyyy-MM-dd HH:mm:ss"
+            },
+            "updateTime": {
+              "type": "Date",
+              "description": "更新时间",
+              "example": "2024-12-27 10:30:00",
+              "format": "yyyy-MM-dd HH:mm:ss"
+            }
+          }
+        }
+      }
+    }
+  },
+  "responseExamples": {
+    "success": {
+      "code": 200,
+      "msg": "success",
+      "page": {
+        "totalCount": 25,
+        "pageSize": 10,
+        "totalPage": 3,
+        "currPage": 1,
+        "list": [
+          {
+            "planId": "PLAN_001",
+            "storeId": "STORE_001",
+            "planType": 1,
+            "strategyType": 1,
+            "planName": "春节营销计划",
+            "status": 2,
+            "submittedAt": "2024-12-27 10:30:00",
+            "executedAt": null,
+            "deliveredAt": null,
+            "deleted": 0,
+            "createTime": "2024-12-27 09:00:00",
+            "updateTime": "2024-12-27 10:30:00"
+          },
+          {
+            "planId": "PLAN_002",
+            "storeId": "STORE_001",
+            "planType": 2,
+            "strategyType": 2,
+            "planName": "元宵节视频计划",
+            "status": 1,
+            "submittedAt": null,
+            "executedAt": null,
+            "deliveredAt": null,
+            "deleted": 0,
+            "createTime": "2024-12-26 14:20:00",
+            "updateTime": "2024-12-26 15:10:00"
+          },
+          {
+            "planId": "PLAN_003",
+            "storeId": "STORE_002",
+            "planType": 1,
+            "strategyType": 1,
+            "planName": "周末促销计划",
+            "status": 3,
+            "submittedAt": "2024-12-25 16:00:00",
+            "executedAt": "2024-12-26 09:00:00",
+            "deliveredAt": null,
+            "deleted": 0,
+            "createTime": "2024-12-25 10:00:00",
+            "updateTime": "2024-12-26 09:00:00"
+          }
+        ]
+      }
+    },
+    "emptyResult": {
+      "code": 200,
+      "msg": "success",
+      "page": {
+        "totalCount": 0,
+        "pageSize": 10,
+        "totalPage": 0,
+        "currPage": 1,
+        "list": []
+      }
+    }
+  },
+  "notes": [
+    "所有查询参数都是可选的，可以组合使用",
+    "planName 使用模糊匹配（LIKE），其他字段使用精确匹配（=）",
+    "默认按 createTime 倒序排序",
+    "默认只返回 deleted=0 的记录",
+    "分页参数 page 和 limit 如果不传，默认 page=1, limit=10"
+  ]
+}
+

@@ -1,0 +1,415 @@
+{
+  "description": "BizPlanItem list API 请求和响应示例",
+  "api": {
+    "method": "GET",
+    "url": "/manage/bizPlanItem/list",
+    "description": "分页查询计划项目列表"
+  },
+  "requestParameters": {
+    "description": "所有参数均为可选，通过 Query Parameters 传递",
+    "pagination": {
+      "page": {
+        "type": "String",
+        "required": false,
+        "description": "页码，从1开始",
+        "default": "1",
+        "example": "1"
+      },
+      "limit": {
+        "type": "String",
+        "required": false,
+        "description": "每页记录数",
+        "default": "10",
+        "example": "10"
+      },
+      "sidx": {
+        "type": "String",
+        "required": false,
+        "description": "排序字段（字段名）",
+        "example": "createTime"
+      },
+      "order": {
+        "type": "String",
+        "required": false,
+        "description": "排序方式：asc-升序，desc-降序",
+        "enum": ["asc", "desc"],
+        "example": "desc"
+      }
+    },
+    "queryFilters": {
+      "itemId": {
+        "type": "String",
+        "required": false,
+        "description": "计划项目ID（精确匹配）",
+        "example": "ITEM_001"
+      },
+      "planId": {
+        "type": "String",
+        "required": false,
+        "description": "计划头部ID（精确匹配）",
+        "example": "PLAN_001"
+      },
+      "storeId": {
+        "type": "String",
+        "required": false,
+        "description": "门店ID（精确匹配，通过计划头部关联查询）",
+        "example": "STORE_001"
+      },
+      "dateKey": {
+        "type": "String",
+        "required": false,
+        "description": "日期键：图片计划为YYYY-MM-DD，视频计划为WEEK1-WEEK4（精确匹配）",
+        "example": "2024-12-27"
+      },
+      "idx_date_key": {
+        "type": "String",
+        "required": false,
+        "description": "日期键索引查询（与dateKey相同，使用索引优化查询）",
+        "example": "2024-12-27",
+        "note": "等同于dateKey参数，用于索引优化"
+      },
+      "timeSlot": {
+        "type": "String",
+        "required": false,
+        "description": "时段字典CODE：ALL-全天，BREAKFAST-早餐，LUNCH-午餐，AFTERNOON-下午，DINNER-晚餐",
+        "enum": ["ALL", "BREAKFAST", "LUNCH", "AFTERNOON", "DINNER"],
+        "example": "LUNCH"
+      },
+      "marketingTheme": {
+        "type": "String",
+        "required": false,
+        "description": "营销主题字典CODE：MEMBER-会员，DISCOUNT-折扣，NEWPRODUCT-新品，GROUPBUY-团购，HOLIDAY-节日，REFERRAL-推荐等",
+        "enum": ["MEMBER", "DISCOUNT", "NEWPRODUCT", "GROUPBUY", "HOLIDAY", "REFERRAL"],
+        "example": "DISCOUNT"
+      },
+      "platform": {
+        "type": "String",
+        "required": false,
+        "description": "发布平台字典CODE：DOUYIN-抖音，MEITUAN-美团，XIAOHONGSHU-小红书，WECHAT-微信等，公域获客时使用",
+        "enum": ["DOUYIN", "MEITUAN", "XIAOHONGSHU", "WECHAT"],
+        "example": "DOUYIN"
+      },
+      "contentTag": {
+        "type": "String",
+        "required": false,
+        "description": "内容类型标签字典CODE：SHORTVIDEO-短视频，GROUPBUY-团购，STOREVISIT-到店，NEWPRODUCT-新品等，公域获客时使用",
+        "enum": ["SHORTVIDEO", "GROUPBUY", "STOREVISIT", "NEWPRODUCT"],
+        "example": "SHORTVIDEO"
+      },
+      "status": {
+        "type": "String",
+        "required": false,
+        "description": "状态：0-INIT初始待生成，1-CONFIRMING修改确认中，2-SUBMITTED已提交，3-EXECUTED已执行，4-DELIVERED已下发，5-CANCELLED已取消",
+        "enum": ["0", "1", "2", "3", "4", "5"],
+        "example": "2"
+      }
+    }
+  },
+  "requestExamples": {
+    "example1_basic": {
+      "description": "基础查询 - 查询第1页，每页10条",
+      "url": "/manage/bizPlanItem/list?page=1&limit=10",
+      "curl": "curl -X GET \"http://localhost:8080/manage/bizPlanItem/list?page=1&limit=10\""
+    },
+    "example2_byPlanId": {
+      "description": "查询指定计划的所有项目",
+      "url": "/manage/bizPlanItem/list?page=1&limit=10&planId=PLAN_001",
+      "curl": "curl -X GET \"http://localhost:8080/manage/bizPlanItem/list?page=1&limit=10&planId=PLAN_001\""
+    },
+    "example2_byStoreId": {
+      "description": "查询指定门店的所有计划项目",
+      "url": "/manage/bizPlanItem/list?page=1&limit=10&storeId=STORE_001",
+      "curl": "curl -X GET \"http://localhost:8080/manage/bizPlanItem/list?page=1&limit=10&storeId=STORE_001\""
+    },
+    "example3_byDateKey": {
+      "description": "查询指定日期的计划项目",
+      "url": "/manage/bizPlanItem/list?page=1&limit=10&dateKey=2024-12-27",
+      "curl": "curl -X GET \"http://localhost:8080/manage/bizPlanItem/list?page=1&limit=10&dateKey=2024-12-27\""
+    },
+    "example3_byIdxDateKey": {
+      "description": "使用索引查询指定日期的计划项目（优化查询）",
+      "url": "/manage/bizPlanItem/list?page=1&limit=10&idx_date_key=2024-12-27",
+      "curl": "curl -X GET \"http://localhost:8080/manage/bizPlanItem/list?page=1&limit=10&idx_date_key=2024-12-27\""
+    },
+    "example4_byTimeSlot": {
+      "description": "查询午餐时段的计划项目",
+      "url": "/manage/bizPlanItem/list?page=1&limit=10&timeSlot=LUNCH",
+      "curl": "curl -X GET \"http://localhost:8080/manage/bizPlanItem/list?page=1&limit=10&timeSlot=LUNCH\""
+    },
+    "example5_byStatus": {
+      "description": "查询已提交的计划项目",
+      "url": "/manage/bizPlanItem/list?page=1&limit=10&status=2",
+      "curl": "curl -X GET \"http://localhost:8080/manage/bizPlanItem/list?page=1&limit=10&status=2\""
+    },
+    "example6_byPlatform": {
+      "description": "查询抖音平台的计划项目",
+      "url": "/manage/bizPlanItem/list?page=1&limit=10&platform=DOUYIN",
+      "curl": "curl -X GET \"http://localhost:8080/manage/bizPlanItem/list?page=1&limit=10&platform=DOUYIN\""
+    },
+    "example7_complex": {
+      "description": "复杂查询 - 查询指定计划的午餐时段折扣活动项目，按创建时间倒序",
+      "url": "/manage/bizPlanItem/list?page=1&limit=20&planId=PLAN_001&timeSlot=LUNCH&marketingTheme=DISCOUNT&status=2&sidx=createTime&order=desc",
+      "curl": "curl -X GET \"http://localhost:8080/manage/bizPlanItem/list?page=1&limit=20&planId=PLAN_001&timeSlot=LUNCH&marketingTheme=DISCOUNT&status=2&sidx=createTime&order=desc\""
+    },
+    "example8_byStoreAndDate": {
+      "description": "查询指定门店在指定日期的计划项目",
+      "url": "/manage/bizPlanItem/list?page=1&limit=10&storeId=STORE_001&idx_date_key=2024-12-27",
+      "curl": "curl -X GET \"http://localhost:8080/manage/bizPlanItem/list?page=1&limit=10&storeId=STORE_001&idx_date_key=2024-12-27\""
+    }
+  },
+  "responseStructure": {
+    "code": {
+      "type": "Integer",
+      "description": "响应码，200表示成功",
+      "example": 200
+    },
+    "msg": {
+      "type": "String",
+      "description": "响应消息",
+      "example": "success"
+    },
+    "page": {
+      "type": "PageUtils",
+      "description": "分页信息",
+      "properties": {
+        "totalCount": {
+          "type": "Integer",
+          "description": "总记录数",
+          "example": 50
+        },
+        "pageSize": {
+          "type": "Integer",
+          "description": "每页记录数",
+          "example": 10
+        },
+        "totalPage": {
+          "type": "Integer",
+          "description": "总页数",
+          "example": 5
+        },
+        "currPage": {
+          "type": "Integer",
+          "description": "当前页数",
+          "example": 1
+        },
+        "list": {
+          "type": "Array<BizPlanItem>",
+          "description": "计划项目列表数据",
+          "items": {
+            "itemId": {
+              "type": "String",
+              "description": "计划项目ID",
+              "example": "ITEM_001"
+            },
+            "planId": {
+              "type": "String",
+              "description": "计划头部ID",
+              "example": "PLAN_001"
+            },
+            "dateKey": {
+              "type": "String",
+              "description": "日期键：图片计划为YYYY-MM-DD，视频计划为WEEK1-WEEK4",
+              "example": "2024-12-27"
+            },
+            "timeSlot": {
+              "type": "String",
+              "description": "时段：ALL-全天，BREAKFAST-早餐，LUNCH-午餐，AFTERNOON-下午，DINNER-晚餐",
+              "example": "LUNCH"
+            },
+            "marketingTheme": {
+              "type": "String",
+              "description": "营销主题：MEMBER-会员，DISCOUNT-折扣，NEWPRODUCT-新品，GROUPBUY-团购，HOLIDAY-节日，REFERRAL-推荐等",
+              "example": "DISCOUNT"
+            },
+            "platform": {
+              "type": "String",
+              "description": "发布平台：DOUYIN-抖音，MEITUAN-美团，XIAOHONGSHU-小红书，WECHAT-微信等",
+              "example": "DOUYIN"
+            },
+            "contentTag": {
+              "type": "String",
+              "description": "内容类型标签：SHORTVIDEO-短视频，GROUPBUY-团购，STOREVISIT-到店，NEWPRODUCT-新品等",
+              "example": "SHORTVIDEO"
+            },
+            "productName": {
+              "type": "String",
+              "description": "产品名称",
+              "example": "招牌牛肉面"
+            },
+            "originalPrice": {
+              "type": "BigDecimal",
+              "description": "原价",
+              "example": 38.00
+            },
+            "discountPrice": {
+              "type": "BigDecimal",
+              "description": "优惠价",
+              "example": 28.00
+            },
+            "activityDetails": {
+              "type": "String",
+              "description": "活动详情与规则",
+              "example": "午餐时段特价，限时优惠10元"
+            },
+            "status": {
+              "type": "Integer",
+              "description": "状态：0-INIT初始待生成，1-CONFIRMING修改确认中，2-SUBMITTED已提交，3-EXECUTED已执行，4-DELIVERED已下发，5-CANCELLED已取消",
+              "example": 2
+            },
+            "submittedAt": {
+              "type": "Date",
+              "description": "提交时间",
+              "example": "2024-12-27 10:30:00",
+              "format": "yyyy-MM-dd HH:mm:ss"
+            },
+            "executedAt": {
+              "type": "Date",
+              "description": "执行时间",
+              "example": "2024-12-27 11:00:00",
+              "format": "yyyy-MM-dd HH:mm:ss"
+            },
+            "deliveredAt": {
+              "type": "Date",
+              "description": "下发用户时间",
+              "example": "2024-12-27 12:00:00",
+              "format": "yyyy-MM-dd HH:mm:ss"
+            },
+            "createTime": {
+              "type": "Date",
+              "description": "创建时间",
+              "example": "2024-12-27 09:00:00",
+              "format": "yyyy-MM-dd HH:mm:ss"
+            },
+            "updateTime": {
+              "type": "Date",
+              "description": "更新时间",
+              "example": "2024-12-27 10:30:00",
+              "format": "yyyy-MM-dd HH:mm:ss"
+            }
+          }
+        }
+      }
+    }
+  },
+  "responseExamples": {
+    "success": {
+      "code": 200,
+      "msg": "success",
+      "page": {
+        "totalCount": 50,
+        "pageSize": 10,
+        "totalPage": 5,
+        "currPage": 1,
+        "list": [
+          {
+            "itemId": "ITEM_001",
+            "planId": "PLAN_001",
+            "dateKey": "2024-12-27",
+            "timeSlot": "LUNCH",
+            "marketingTheme": "DISCOUNT",
+            "platform": "DOUYIN",
+            "contentTag": "SHORTVIDEO",
+            "productName": "招牌牛肉面",
+            "originalPrice": 38.00,
+            "discountPrice": 28.00,
+            "activityDetails": "午餐时段特价，限时优惠10元，仅限今日",
+            "status": 2,
+            "submittedAt": "2024-12-27 10:30:00",
+            "executedAt": null,
+            "deliveredAt": null,
+            "deleted": 0,
+            "createTime": "2024-12-27 09:00:00",
+            "updateTime": "2024-12-27 10:30:00"
+          },
+          {
+            "itemId": "ITEM_002",
+            "planId": "PLAN_001",
+            "dateKey": "2024-12-27",
+            "timeSlot": "DINNER",
+            "marketingTheme": "NEWPRODUCT",
+            "platform": "WECHAT",
+            "contentTag": null,
+            "productName": "新品小龙虾",
+            "originalPrice": 88.00,
+            "discountPrice": 68.00,
+            "activityDetails": "新品上市，首周特惠20元",
+            "status": 1,
+            "submittedAt": null,
+            "executedAt": null,
+            "deliveredAt": null,
+            "deleted": 0,
+            "createTime": "2024-12-27 09:15:00",
+            "updateTime": "2024-12-27 09:45:00"
+          },
+          {
+            "itemId": "ITEM_003",
+            "planId": "PLAN_001",
+            "dateKey": "2024-12-28",
+            "timeSlot": "ALL",
+            "marketingTheme": "GROUPBUY",
+            "platform": "MEITUAN",
+            "contentTag": "GROUPBUY",
+            "productName": "双人套餐",
+            "originalPrice": 158.00,
+            "discountPrice": 128.00,
+            "activityDetails": "双人套餐团购价，限时3天",
+            "status": 3,
+            "submittedAt": "2024-12-26 16:00:00",
+            "executedAt": "2024-12-27 09:00:00",
+            "deliveredAt": null,
+            "deleted": 0,
+            "createTime": "2024-12-26 10:00:00",
+            "updateTime": "2024-12-27 09:00:00"
+          },
+          {
+            "itemId": "ITEM_004",
+            "planId": "PLAN_002",
+            "dateKey": "WEEK1",
+            "timeSlot": "BREAKFAST",
+            "marketingTheme": "MEMBER",
+            "platform": "XIAOHONGSHU",
+            "contentTag": "STOREVISIT",
+            "productName": "会员早餐套餐",
+            "originalPrice": 25.00,
+            "discountPrice": 20.00,
+            "activityDetails": "会员专享早餐套餐，每周一特价",
+            "status": 4,
+            "submittedAt": "2024-12-20 10:00:00",
+            "executedAt": "2024-12-23 08:00:00",
+            "deliveredAt": "2024-12-23 09:00:00",
+            "deleted": 0,
+            "createTime": "2024-12-19 14:00:00",
+            "updateTime": "2024-12-23 09:00:00"
+          }
+        ]
+      }
+    },
+    "emptyResult": {
+      "code": 200,
+      "msg": "success",
+      "page": {
+        "totalCount": 0,
+        "pageSize": 10,
+        "totalPage": 0,
+        "currPage": 1,
+        "list": []
+      }
+    }
+  },
+  "notes": [
+    "所有查询参数都是可选的，可以组合使用",
+    "所有筛选字段使用精确匹配（=）",
+    "默认按 createTime 倒序排序",
+    "默认只返回 deleted=0 的记录",
+    "分页参数 page 和 limit 如果不传，默认 page=1, limit=10",
+    "storeId 通过计划头部表（biz_plan_header）关联查询，查询该门店下所有计划的项目",
+    "dateKey 和 idx_date_key 功能相同，idx_date_key 使用数据库索引优化查询性能",
+    "dateKey 格式：图片计划使用 YYYY-MM-DD（如：2024-12-27），视频计划使用 WEEK1-WEEK4",
+    "timeSlot 时段：ALL-全天，BREAKFAST-早餐，LUNCH-午餐，AFTERNOON-下午，DINNER-晚餐",
+    "marketingTheme 营销主题：MEMBER-会员，DISCOUNT-折扣，NEWPRODUCT-新品，GROUPBUY-团购，HOLIDAY-节日，REFERRAL-推荐",
+    "platform 发布平台：DOUYIN-抖音，MEITUAN-美团，XIAOHONGSHU-小红书，WECHAT-微信",
+    "contentTag 内容标签：SHORTVIDEO-短视频，GROUPBUY-团购，STOREVISIT-到店，NEWPRODUCT-新品",
+    "status 状态：0-初始待生成，1-修改确认中，2-已提交，3-已执行，4-已下发，5-已取消"
+  ]
+}
+
