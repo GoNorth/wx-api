@@ -27,9 +27,9 @@ public interface MsgReplyService {
 
     default void reply(String toUser,String replyType, String replyContent){
         try {
-            // 自动检测：如果replyType是image但内容包含多个mediaId和文本，自动转换为mixed类型
-            if (WxConsts.KefuMsgType.IMAGE.equals(replyType) && isMixedContent(replyContent)) {
-                logger.info("检测到混合消息内容，自动转换为mixed类型");
+            // 自动检测：如果replyType是支持混合内容的媒体类型（如image、video），且内容包含多个mediaId和文本，自动转换为mixed类型
+            if (isMediaTypeSupportingMixedContent(replyType) && isMixedContent(replyContent)) {
+                logger.info("检测到混合消息内容，自动将{}类型转换为mixed类型", replyType);
                 this.replyMixed(toUser, replyContent);
                 return;
             }
@@ -61,6 +61,24 @@ public interface MsgReplyService {
         } catch (Exception e) {
             logger.error("自动回复出错：", e);
         }
+    }
+
+    /**
+     * 检查回复类型是否支持混合内容（文本+媒体文件）
+     * 支持的媒体类型：IMAGE、VIDEO等
+     * 这些类型如果内容包含文本和多个mediaId，会自动转换为mixed类型处理
+     * 
+     * @param replyType 回复类型
+     * @return true表示支持混合内容自动转换
+     */
+    default boolean isMediaTypeSupportingMixedContent(String replyType) {
+        if (replyType == null) {
+            return false;
+        }
+        // 支持混合内容的媒体类型列表：IMAGE、VIDEO等
+        // 可以根据需要扩展其他类型
+        return WxConsts.KefuMsgType.IMAGE.equals(replyType) 
+            || WxConsts.KefuMsgType.VIDEO.equals(replyType);
     }
 
     /**
