@@ -12,7 +12,7 @@ import org.apache.ibatis.annotations.Mapper;
  * @date 2024-12-27
  */
 @Mapper
-@CacheNamespace(flushInterval = 300000L)//缓存五分钟过期
+// @CacheNamespace(flushInterval = 300000L)//缓存五分钟过期 - 临时禁用缓存用于调试
 public interface BizResourcesContentMapper extends BaseMapper<BizResourcesContent> {
 
 }

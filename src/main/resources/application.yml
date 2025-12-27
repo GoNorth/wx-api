@@ -59,7 +59,7 @@ mybatis-plus:
   #原生配置
   configuration:
     map-underscore-to-camel-case: true
-    cache-enabled: true
+    cache-enabled: false  # 临时禁用缓存用于调试SQL
     call-setters-on-nulls: true
     jdbc-type-for-null: 'null'
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 打印SQL到控制台

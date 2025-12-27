@@ -1,0 +1,160 @@
+{
+  "description": "POST /manage/bizStore/saveWithFiles 接口请求参数说明",
+  "contentType": "multipart/form-data",
+  "parameters": {
+    "门店基本信息": {
+      "storeId": {
+        "type": "String",
+        "required": false,
+        "description": "门店ID，不传则自动生成UUID",
+        "example": "STORE_001"
+      },
+      "ownerOpenid": {
+        "type": "String",
+        "required": true,
+        "description": "店主微信OPENID，关联WX_USER表的OPENID",
+        "example": "wx_openid_001"
+      },
+      "ownerName": {
+        "type": "String",
+        "required": true,
+        "description": "店主姓名",
+        "example": "张三"
+      },
+      "ownerPhone": {
+        "type": "String",
+        "required": true,
+        "description": "店主手机号（11位）",
+        "example": "13800138000"
+      },
+      "storeName": {
+        "type": "String",
+        "required": true,
+        "description": "门店名称",
+        "example": "测试餐厅"
+      },
+      "cateringType": {
+        "type": "String",
+        "required": true,
+        "description": "餐饮种类字典CODE",
+        "enum": ["CHINESE", "WESTERN", "JAPANESE", "HOTPOT", "BARBECUE", "FASTFOOD", "SNACK", "OTHER"],
+        "example": "CHINESE"
+      },
+      "storeAddress": {
+        "type": "String",
+        "required": true,
+        "description": "门店详细地址",
+        "example": "北京市朝阳区测试街道123号"
+      },
+      "longitude": {
+        "type": "BigDecimal",
+        "required": false,
+        "description": "经度",
+        "example": "116.1234567"
+      },
+      "latitude": {
+        "type": "BigDecimal",
+        "required": false,
+        "description": "纬度",
+        "example": "39.1234567"
+      },
+      "customerGroup": {
+        "type": "String",
+        "required": true,
+        "description": "客户人群字典CODE",
+        "enum": ["STUDENT", "OFFICE_WORKER", "FAMILY", "BUSINESS", "ELDERLY", "OTHER"],
+        "example": "OFFICE_WORKER"
+      },
+      "auditStatus": {
+        "type": "Integer",
+        "required": false,
+        "description": "审核状态：0-待审核，1-已通过，2-已拒绝",
+        "default": 0,
+        "example": 0
+      },
+      "auditRemark": {
+        "type": "String",
+        "required": false,
+        "description": "审核备注",
+        "example": "审核通过"
+      }
+    },
+    "门店VI文件": {
+      "logoFile": {
+        "type": "MultipartFile",
+        "required": false,
+        "description": "门店LOGO文件",
+        "format": "JPG/PNG",
+        "maxSize": "5MB"
+      },
+      "workUniformFile": {
+        "type": "MultipartFile",
+        "required": false,
+        "description": "工作服照片文件",
+        "format": "JPG/PNG",
+        "maxSize": "5MB"
+      },
+      "ipImageFile": {
+        "type": "MultipartFile",
+        "required": false,
+        "description": "IP形象设计图文件",
+        "format": "JPG/PNG",
+        "maxSize": "5MB"
+      }
+    },
+    "人物形象文件": {
+      "characterPhotoFile": {
+        "type": "MultipartFile",
+        "required": false,
+        "description": "人物照片文件",
+        "format": "JPG/PNG",
+        "maxSize": "5MB"
+      },
+      "characterVoiceFile": {
+        "type": "MultipartFile",
+        "required": false,
+        "description": "人物声音文件",
+        "format": "MP3/WAV",
+        "maxSize": "10MB"
+      },
+      "characterRole": {
+        "type": "String",
+        "required": false,
+        "description": "人物角色字典CODE",
+        "enum": ["OWNER", "CHEF", "WAITER", "MANAGER", "OTHER"],
+        "example": "OWNER"
+      }
+    }
+  },
+  "requestExample": {
+    "formData": {
+      "ownerOpenid": "wx_openid_001",
+      "ownerName": "张三",
+      "ownerPhone": "13800138000",
+      "storeName": "测试餐厅",
+      "cateringType": "CHINESE",
+      "storeAddress": "北京市朝阳区测试街道123号",
+      "longitude": "116.1234567",
+      "latitude": "39.1234567",
+      "customerGroup": "OFFICE_WORKER",
+      "auditStatus": "0",
+      "characterRole": "OWNER",
+      "logoFile": "[文件]",
+      "workUniformFile": "[文件]",
+      "ipImageFile": "[文件]",
+      "characterPhotoFile": "[文件]",
+      "characterVoiceFile": "[文件]"
+    }
+  },
+  "responseExample": {
+    "success": {
+      "code": 0,
+      "msg": "success"
+    },
+    "error": {
+      "code": 500,
+      "msg": "门店信息不得为空"
+    }
+  }
+}
+
