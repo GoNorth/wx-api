@@ -1,0 +1,84 @@
+package com.github.niefy.modules.biz.manage;
+
+import com.github.niefy.common.utils.PageUtils;
+import com.github.niefy.common.utils.R;
+import com.github.niefy.modules.biz.entity.BizResourcesContent;
+import com.github.niefy.modules.biz.service.BizResourcesContentService;
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+// import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Arrays;
+import java.util.Map;
+
+/**
+ * 资源(图片视频)内容表-管理后台
+ *
+ * @author niefy
+ * @date 2024-12-27
+ */
+@RestController
+@RequestMapping("/manage/bizResourcesContent")
+@Api(tags = {"资源(图片视频)内容表-管理后台"})
+public class BizResourcesContentManageController {
+    @Autowired
+    private BizResourcesContentService bizResourcesContentService;
+
+    /**
+     * 列表
+     */
+    @GetMapping("/list")
+    // @RequiresPermissions("biz:bizresourcescontent:list")
+    @ApiOperation(value = "列表")
+    public R list(@RequestParam Map<String, Object> params) {
+        PageUtils page = new PageUtils(bizResourcesContentService.queryPage(params));
+        return R.ok().put("page", page);
+    }
+
+    /**
+     * 信息
+     */
+    @GetMapping("/info/{contentId}")
+    // @RequiresPermissions("biz:bizresourcescontent:info")
+    @ApiOperation(value = "详情")
+    public R info(@PathVariable("contentId") String contentId) {
+        BizResourcesContent bizResourcesContent = bizResourcesContentService.getById(contentId);
+        return R.ok().put("bizResourcesContent", bizResourcesContent);
+    }
+
+    /**
+     * 保存
+     */
+    @PostMapping("/save")
+    // @RequiresPermissions("biz:bizresourcescontent:save")
+    @ApiOperation(value = "保存")
+    public R save(@RequestBody BizResourcesContent bizResourcesContent) {
+        bizResourcesContentService.save(bizResourcesContent);
+        return R.ok();
+    }
+
+    /**
+     * 修改
+     */
+    @PostMapping("/update")
+    // @RequiresPermissions("biz:bizresourcescontent:update")
+    @ApiOperation(value = "修改")
+    public R update(@RequestBody BizResourcesContent bizResourcesContent) {
+        bizResourcesContentService.updateById(bizResourcesContent);
+        return R.ok();
+    }
+
+    /**
+     * 删除
+     */
+    @PostMapping("/delete")
+    // @RequiresPermissions("biz:bizresourcescontent:delete")
+    @ApiOperation(value = "删除")
+    public R delete(@RequestBody String[] contentIds) {
+        bizResourcesContentService.removeByIds(Arrays.asList(contentIds));
+        return R.ok();
+    }
+}
+
