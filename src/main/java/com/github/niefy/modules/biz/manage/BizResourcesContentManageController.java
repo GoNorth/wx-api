@@ -1,15 +1,20 @@
 package com.github.niefy.modules.biz.manage;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.niefy.common.utils.PageUtils;
 import com.github.niefy.common.utils.R;
 import com.github.niefy.modules.biz.entity.BizResourcesContent;
+import com.github.niefy.modules.biz.entity.BizStore;
 import com.github.niefy.modules.biz.service.BizResourcesContentService;
+import com.github.niefy.modules.biz.service.BizStoreService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 // import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
 import java.util.Map;
 
@@ -25,6 +30,9 @@ import java.util.Map;
 public class BizResourcesContentManageController {
     @Autowired
     private BizResourcesContentService bizResourcesContentService;
+    
+    @Autowired
+    private BizStoreService bizStoreService;
 
     /**
      * 列表
@@ -32,7 +40,28 @@ public class BizResourcesContentManageController {
     @GetMapping("/list")
     // @RequiresPermissions("biz:bizresourcescontent:list")
     @ApiOperation(value = "列表")
-    public R list(@RequestParam Map<String, Object> params) {
+    public R list(@RequestParam Map<String, Object> params, HttpServletRequest request) {
+        // 从Header中获取wx_openid参数
+        String wxOpenid = request.getHeader("wx_openid");
+        
+        // 如果提供了wx_openid，则通过它查询对应的门店，然后过滤资源内容
+        if (StringUtils.hasText(wxOpenid)) {
+            // 通过ownerOpenid查询门店
+            BizStore bizStore = bizStoreService.getOne(
+                new LambdaQueryWrapper<BizStore>()
+                    .eq(BizStore::getOwnerOpenid, wxOpenid)
+                    .eq(BizStore::getDeleted, 0)
+            );
+            
+            // 如果找到了门店，将storeId添加到查询参数中
+            if (bizStore != null && StringUtils.hasText(bizStore.getStoreId())) {
+                params.put("storeId", bizStore.getStoreId());
+            } else {
+                // 如果没有找到门店，返回空结果（通过设置一个不存在的storeId来确保查询不到数据）
+                params.put("storeId", "__NO_STORE_FOUND__");
+            }
+        }
+        
         PageUtils page = new PageUtils(bizResourcesContentService.queryPage(params));
         return R.ok().put("page", page);
     }

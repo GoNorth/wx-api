@@ -25,10 +25,18 @@ public class BizResourcesContentServiceImpl extends ServiceImpl<BizResourcesCont
     public IPage<BizResourcesContent> queryPage(Map<String, Object> params) {
         String contentId = (String) params.get("contentId");
         String storeId = (String) params.get("storeId");
+        // 支持 content_type 和 contentType 两种参数名
         String contentType = (String) params.get("contentType");
+        if (!StringUtils.hasText(contentType)) {
+            contentType = (String) params.get("content_type");
+        }
         String planItemId = (String) params.get("planItemId");
         String title = (String) params.get("title");
+        // 支持 publish_date 和 publishDate 两种参数名
         String publishDate = (String) params.get("publishDate");
+        if (!StringUtils.hasText(publishDate)) {
+            publishDate = (String) params.get("publish_date");
+        }
 
         return this.page(
             new Query<BizResourcesContent>().getPage(params),

@@ -77,6 +77,12 @@
 			<artifactId>mysql-connector-java</artifactId>
 			<version>${mysql.version}</version>
 		</dependency>
+		<!-- p6spy SQL日志打印，用于打印完整SQL（参数已拼接） -->
+		<dependency>
+			<groupId>p6spy</groupId>
+			<artifactId>p6spy</artifactId>
+			<version>3.9.1</version>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-core</artifactId>
