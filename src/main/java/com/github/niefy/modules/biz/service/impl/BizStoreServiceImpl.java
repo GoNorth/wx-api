@@ -12,7 +12,9 @@ import com.github.niefy.modules.biz.entity.BizStoreVi;
 import com.github.niefy.modules.biz.service.BizStoreCharacterService;
 import com.github.niefy.modules.biz.service.BizStoreService;
 import com.github.niefy.modules.biz.service.BizStoreViService;
-import com.github.niefy.modules.oss.cloud.OSSFactory;
+import com.github.niefy.modules.oss.service.TosStorageService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -33,12 +35,16 @@ import java.util.UUID;
  */
 @Service
 public class BizStoreServiceImpl extends ServiceImpl<BizStoreMapper, BizStore> implements BizStoreService {
+    private static final Logger logger = LoggerFactory.getLogger(BizStoreServiceImpl.class);
 
     @Autowired
     private BizStoreViService bizStoreViService;
 
     @Autowired
     private BizStoreCharacterService bizStoreCharacterService;
+
+    @Autowired
+    private TosStorageService storageService;
 
     @Override
     public IPage<BizStore> queryPage(Map<String, Object> params) {
@@ -163,13 +169,13 @@ public class BizStoreServiceImpl extends ServiceImpl<BizStoreMapper, BizStore> i
 
         // 上传文件（只有上传了文件才更新URL）
         if (logoFile != null && !logoFile.isEmpty()) {
-            bizStoreVi.setLogoUrl(uploadFile(logoFile));
+            bizStoreVi.setLogoUrl(uploadFile(logoFile, storeId));
         }
         if (workUniformFile != null && !workUniformFile.isEmpty()) {
-            bizStoreVi.setWorkUniformUrl(uploadFile(workUniformFile));
+            bizStoreVi.setWorkUniformUrl(uploadFile(workUniformFile, storeId));
         }
         if (ipImageFile != null && !ipImageFile.isEmpty()) {
-            bizStoreVi.setIpImageUrl(uploadFile(ipImageFile));
+            bizStoreVi.setIpImageUrl(uploadFile(ipImageFile, storeId));
         }
 
         bizStoreViService.saveOrUpdate(bizStoreVi);
@@ -221,24 +227,38 @@ public class BizStoreServiceImpl extends ServiceImpl<BizStoreMapper, BizStore> i
 
         // 上传文件（只有上传了文件才更新URL）
         if (characterPhotoFile != null && !characterPhotoFile.isEmpty()) {
-            bizStoreCharacter.setCharacterPhotoUrl(uploadFile(characterPhotoFile));
+            bizStoreCharacter.setCharacterPhotoUrl(uploadFile(characterPhotoFile, storeId));
         }
         if (characterVoiceFile != null && !characterVoiceFile.isEmpty()) {
-            bizStoreCharacter.setCharacterVoiceUrl(uploadFile(characterVoiceFile));
+            bizStoreCharacter.setCharacterVoiceUrl(uploadFile(characterVoiceFile, storeId));
         }
 
         bizStoreCharacterService.saveOrUpdate(bizStoreCharacter);
     }
 
     /**
-     * 上传文件到OSS并返回URL
+     * 上传文件到COS并返回URL
+     * 文件名格式：原始文件名（不含扩展名）+ storeId + 扩展名（不添加LOGO）
      * @param file 文件
+     * @param storeId 门店ID
      * @return 文件URL
      */
-    private String uploadFile(MultipartFile file) throws Exception {
-        String suffix = Objects.requireNonNull(file.getOriginalFilename())
-                .substring(file.getOriginalFilename().lastIndexOf("."));
-        return Objects.requireNonNull(OSSFactory.build()).uploadSuffix(file.getBytes(), suffix);
+    private String uploadFile(MultipartFile file, String storeId) throws Exception {
+        String originalFilename = Objects.requireNonNull(file.getOriginalFilename());
+        // 提取文件名（不含扩展名）
+        String fileNameWithoutExt;
+        int lastDotIndex = originalFilename.lastIndexOf(".");
+        if (lastDotIndex > 0) {
+            fileNameWithoutExt = originalFilename.substring(0, lastDotIndex);
+        } else {
+            fileNameWithoutExt = originalFilename;
+        }
+        
+        // 上传到COS，文件名格式：原始文件名（不含扩展名）+ storeId + 扩展名（不添加LOGO）
+        String cosFileName = fileNameWithoutExt + "_" + storeId;
+        String fileUrl = storageService.storeWithoutLogo(file, cosFileName);
+        logger.info("图片上传COS成功（未添加LOGO）: {}", fileUrl);
+        return fileUrl;
     }
 }
 
