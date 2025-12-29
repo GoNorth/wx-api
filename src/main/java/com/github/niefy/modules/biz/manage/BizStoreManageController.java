@@ -1,17 +1,26 @@
 package com.github.niefy.modules.biz.manage;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.github.niefy.common.utils.PageUtils;
 import com.github.niefy.common.utils.R;
 import com.github.niefy.modules.biz.entity.BizStore;
+import com.github.niefy.modules.biz.entity.BizStoreCharacter;
+import com.github.niefy.modules.biz.entity.BizStoreVi;
+import com.github.niefy.modules.biz.service.BizStoreCharacterService;
 import com.github.niefy.modules.biz.service.BizStoreService;
+import com.github.niefy.modules.biz.service.BizStoreViService;
+import com.github.niefy.modules.biz.utils.BizStoreUtils;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 // import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -27,6 +36,12 @@ public class BizStoreManageController {
     @Autowired
     private BizStoreService bizStoreService;
 
+    @Autowired
+    private BizStoreViService bizStoreViService;
+
+    @Autowired
+    private BizStoreCharacterService bizStoreCharacterService;
+
     /**
      * 列表
      */
@@ -39,14 +54,57 @@ public class BizStoreManageController {
     }
 
     /**
-     * 信息
+     * 信息（通过路径参数storeId或header的wx_openid）
+     * 支持两种访问方式：
+     * 1. /info/{storeId} - 通过路径参数传递storeId
+     * 2. /info - 不传路径参数，从header的wx_openid查询对应的storeId
      */
-    @GetMapping("/info/{storeId}")
+    @GetMapping({"/info/{storeId}", "/info"})
     // @RequiresPermissions("biz:bizstore:info")
-    @ApiOperation(value = "详情")
-    public R info(@PathVariable("storeId") String storeId) {
+    @ApiOperation(value = "详情（通过storeId路径参数或wx_openid header）")
+    public R info(@PathVariable(value = "storeId", required = false) String storeId, HttpServletRequest request) {
+        // 如果storeId为空，尝试从header的wx_openid查询对应的storeId
+        if (!StringUtils.hasText(storeId)) {
+            String storeIdByOpenid = BizStoreUtils.getStoreIdByWxOpenid(request);
+            if (StringUtils.hasText(storeIdByOpenid)) {
+                storeId = storeIdByOpenid;
+            } else {
+                return R.error("storeId参数或wx_openid header不能同时为空，或未找到对应的门店信息");
+            }
+        }
+        
+        return getStoreInfo(storeId);
+    }
+
+    /**
+     * 获取门店信息的通用方法
+     */
+    private R getStoreInfo(String storeId) {
+        // 查询门店基本信息
         BizStore bizStore = bizStoreService.getById(storeId);
-        return R.ok().put("bizStore", bizStore);
+        if (bizStore == null) {
+            return R.error("门店不存在");
+        }
+
+        // 查询门店VI信息（1:1关系）
+        BizStoreVi bizStoreVi = bizStoreViService.getOne(
+                new LambdaQueryWrapper<BizStoreVi>()
+                        .eq(BizStoreVi::getStoreId, storeId)
+                        .eq(BizStoreVi::getDeleted, 0)
+        );
+
+        // 查询门店人物形象列表（1:N关系）
+        List<BizStoreCharacter> bizStoreCharacterList = bizStoreCharacterService.list(
+                new LambdaQueryWrapper<BizStoreCharacter>()
+                        .eq(BizStoreCharacter::getStoreId, storeId)
+                        .eq(BizStoreCharacter::getDeleted, 0)
+                        .orderByAsc(BizStoreCharacter::getCreateTime)
+        );
+
+        return R.ok()
+                .put("bizStore", bizStore)
+                .put("bizStoreVi", bizStoreVi)
+                .put("bizStoreCharacterList", bizStoreCharacterList);
     }
 
     /**
@@ -107,15 +165,15 @@ public class BizStoreManageController {
     public R saveWithFiles(
             // 门店基本信息
             @ModelAttribute BizStore bizStore,
+            // 人物角色 + 人物形象文件
+            @RequestParam(required = false) String characterRole,
+            @RequestParam(required = false) MultipartFile characterPhotoFile,
+            @RequestParam(required = false) MultipartFile characterVoiceFile,
             // 门店VI文件
             @RequestParam(required = false) MultipartFile logoFile,
             @RequestParam(required = false) MultipartFile workUniformFile,
-            @RequestParam(required = false) MultipartFile ipImageFile,
-            // 人物形象文件
-            @RequestParam(required = false) MultipartFile characterPhotoFile,
-            @RequestParam(required = false) MultipartFile characterVoiceFile,
-            // 人物角色
-            @RequestParam(required = false) String characterRole
+            @RequestParam(required = false) MultipartFile ipImageFile
+
     ) throws Exception {
         if (bizStore == null) {
             return R.error("门店信息不得为空");
