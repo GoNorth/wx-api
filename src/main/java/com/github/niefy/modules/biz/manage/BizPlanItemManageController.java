@@ -1,6 +1,7 @@
 package com.github.niefy.modules.biz.manage;
 
 import com.github.niefy.common.utils.PageUtils;
+import com.github.niefy.common.utils.PlatformUtils;
 import com.github.niefy.common.utils.R;
 import com.github.niefy.modules.biz.entity.BizPlanItem;
 import com.github.niefy.modules.biz.service.BizPlanItemService;
@@ -45,6 +46,10 @@ public class BizPlanItemManageController {
     @ApiOperation(value = "详情")
     public R info(@PathVariable("itemId") String itemId) {
         BizPlanItem bizPlanItem = bizPlanItemService.getById(itemId);
+        if (bizPlanItem != null) {
+            bizPlanItem.setPlatformDesc(PlatformUtils.getPlatformDesc(bizPlanItem.getPlatform()));
+            bizPlanItem.setContentTagDesc(PlatformUtils.getContentTagDesc(bizPlanItem.getContentTag()));
+        }
         return R.ok().put("bizPlanItem", bizPlanItem);
     }
 

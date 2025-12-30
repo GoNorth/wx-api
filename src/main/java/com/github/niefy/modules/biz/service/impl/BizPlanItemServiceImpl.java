@@ -3,6 +3,8 @@ package com.github.niefy.modules.biz.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.github.niefy.common.utils.DateKeyUtils;
+import com.github.niefy.common.utils.PlatformUtils;
 import com.github.niefy.common.utils.Query;
 import com.github.niefy.modules.biz.dao.BizPlanItemMapper;
 import com.github.niefy.modules.biz.entity.BizPlanItem;
@@ -30,12 +32,29 @@ public class BizPlanItemServiceImpl extends ServiceImpl<BizPlanItemMapper, BizPl
         String planId = (String) params.get("planId");
         String storeId = (String) params.get("storeId");
         String dateKey = (String) params.get("dateKey");
-        String idxDateKey = (String) params.get("idx_date_key");
         String timeSlot = (String) params.get("timeSlot");
         String marketingTheme = (String) params.get("marketingTheme");
         String platform = (String) params.get("platform");
         String contentTag = (String) params.get("contentTag");
         String status = (String) params.get("status");
+        
+        // 获取 strategy_type 参数（支持 strategy_type 和 strategyType 两种格式）
+        Object strategyTypeObj = params.get("strategy_type");
+        if (strategyTypeObj == null) {
+            strategyTypeObj = params.get("strategyType");
+        }
+        Integer strategyType = null;
+        if (strategyTypeObj != null) {
+            if (strategyTypeObj instanceof Integer) {
+                strategyType = (Integer) strategyTypeObj;
+            } else if (strategyTypeObj instanceof String) {
+                try {
+                    strategyType = Integer.parseInt((String) strategyTypeObj);
+                } catch (NumberFormatException e) {
+                    // 忽略解析错误
+                }
+            }
+        }
 
         QueryWrapper<BizPlanItem> queryWrapper = new QueryWrapper<BizPlanItem>()
                 .eq(StringUtils.hasText(itemId), "item_id", itemId)
@@ -47,10 +66,24 @@ public class BizPlanItemServiceImpl extends ServiceImpl<BizPlanItemMapper, BizPl
                 .eq(StringUtils.hasText(status), "status", status)
                 .eq("deleted", 0);
 
-        // 处理 dateKey 或 idx_date_key（两者功能相同，使用索引优化）
-        String finalDateKey = StringUtils.hasText(idxDateKey) ? idxDateKey : dateKey;
-        if (StringUtils.hasText(finalDateKey)) {
+        // 处理 dateKey：如果 strategy_type=2，需要将 dateKey 转换为周格式
+        if (StringUtils.hasText(dateKey)) {
+            String finalDateKey = dateKey;
+            // 如果 strategy_type=2（周计划表），将日期转换为周格式
+            if (strategyType != null && strategyType == 2) {
+                try {
+                    finalDateKey = DateKeyUtils.convertDateToWeek(dateKey);
+                } catch (IllegalArgumentException e) {
+                    // 如果转换失败（可能已经是周格式），使用原值
+                    finalDateKey = dateKey;
+                }
+            }
             queryWrapper.eq("date_key", finalDateKey);
+        }
+        
+        // 如果传入了 strategy_type，也作为查询条件
+        if (strategyType != null) {
+            queryWrapper.eq("strategy_type", strategyType);
         }
 
         // 处理 storeId：需要通过子查询关联 biz_plan_header 表
@@ -61,7 +94,17 @@ public class BizPlanItemServiceImpl extends ServiceImpl<BizPlanItemMapper, BizPl
 
         queryWrapper.orderByDesc("create_time");
 
-        return this.page(new Query<BizPlanItem>().getPage(params), queryWrapper);
+        IPage<BizPlanItem> page = this.page(new Query<BizPlanItem>().getPage(params), queryWrapper);
+        
+        // 设置 platformDesc 和 contentTagDesc
+        if (page != null && page.getRecords() != null) {
+            for (BizPlanItem item : page.getRecords()) {
+                item.setPlatformDesc(PlatformUtils.getPlatformDesc(item.getPlatform()));
+                item.setContentTagDesc(PlatformUtils.getContentTagDesc(item.getContentTag()));
+            }
+        }
+        
+        return page;
     }
 
     @Override

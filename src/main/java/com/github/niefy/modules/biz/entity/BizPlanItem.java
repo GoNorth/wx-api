@@ -1,6 +1,7 @@
 package com.github.niefy.modules.biz.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.github.niefy.common.utils.Json;
@@ -33,6 +34,11 @@ public class BizPlanItem implements Serializable {
     private String planId;
 
     /**
+     * 策略类型字典CODE：1-PRIVATE_DOMAIN私域复购，2-PUBLIC_DOMAIN公域获客
+     */
+    private Integer strategyType;
+
+    /**
      * 日期键：图片计划为YYYY-MM-DD，视频计划为WEEK1-WEEK4
      */
     private String dateKey;
@@ -53,9 +59,21 @@ public class BizPlanItem implements Serializable {
     private String platform;
 
     /**
+     * 发布平台描述（非数据库字段，基于 platform CODE 转换）
+     */
+    @TableField(exist = false)
+    private String platformDesc;
+
+    /**
      * 内容类型标签字典CODE：SHORTVIDEO-短视频，GROUPBUY-团购，STOREVISIT-到店，NEWPRODUCT-新品等，公域获客时使用
      */
     private String contentTag;
+
+    /**
+     * 内容类型标签描述（非数据库字段，基于 contentTag CODE 转换）
+     */
+    @TableField(exist = false)
+    private String contentTagDesc;
 
     /**
      * 产品名称
