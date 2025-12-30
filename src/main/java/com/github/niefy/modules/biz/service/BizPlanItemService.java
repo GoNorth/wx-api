@@ -25,5 +25,12 @@ public interface BizPlanItemService extends IService<BizPlanItem> {
      * @param bizPlanItem 计划项目信息
      */
     void saveOrUpdateItem(BizPlanItem bizPlanItem);
+
+    /**
+     * 填充BizResourcesContent关联字段（rsThumbnailUrl和rsFileUrl）
+     * 根据planItemId查询最新的BizResourcesContent记录
+     * @param bizPlanItem 计划项目信息
+     */
+    void fillResourcesContentFields(BizPlanItem bizPlanItem);
 }
 

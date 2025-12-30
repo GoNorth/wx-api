@@ -7,13 +7,19 @@ import com.github.niefy.common.utils.DateKeyUtils;
 import com.github.niefy.common.utils.PlatformUtils;
 import com.github.niefy.common.utils.Query;
 import com.github.niefy.modules.biz.dao.BizPlanItemMapper;
+import com.github.niefy.modules.biz.entity.BizContentFeedback;
 import com.github.niefy.modules.biz.entity.BizPlanItem;
+import com.github.niefy.modules.biz.entity.BizResourcesContent;
+import com.github.niefy.modules.biz.service.BizContentFeedbackService;
 import com.github.niefy.modules.biz.service.BizPlanItemService;
+import com.github.niefy.modules.biz.service.BizResourcesContentService;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -25,6 +31,12 @@ import java.util.UUID;
  */
 @Service
 public class BizPlanItemServiceImpl extends ServiceImpl<BizPlanItemMapper, BizPlanItem> implements BizPlanItemService {
+
+    @Autowired
+    private BizResourcesContentService bizResourcesContentService;
+
+    @Autowired
+    private BizContentFeedbackService bizContentFeedbackService;
 
     @Override
     public IPage<BizPlanItem> queryPage(Map<String, Object> params) {
@@ -96,11 +108,13 @@ public class BizPlanItemServiceImpl extends ServiceImpl<BizPlanItemMapper, BizPl
 
         IPage<BizPlanItem> page = this.page(new Query<BizPlanItem>().getPage(params), queryWrapper);
         
-        // 设置 platformDesc 和 contentTagDesc
+        // 设置 platformDesc 和 contentTagDesc，以及从BizResourcesContent关联查询的字段
         if (page != null && page.getRecords() != null) {
             for (BizPlanItem item : page.getRecords()) {
                 item.setPlatformDesc(PlatformUtils.getPlatformDesc(item.getPlatform()));
                 item.setContentTagDesc(PlatformUtils.getContentTagDesc(item.getContentTag()));
+                // 关联查询BizResourcesContent，获取缩略图URL和文件URL
+                fillResourcesContentFields(item);
             }
         }
         
@@ -143,6 +157,51 @@ public class BizPlanItemServiceImpl extends ServiceImpl<BizPlanItemMapper, BizPl
         
         // 保存或更新
         this.saveOrUpdate(bizPlanItem);
+    }
+
+    /**
+     * 填充BizResourcesContent关联字段（rsThumbnailUrl、rsFileUrl、rsContentId）
+     * 以及根据rsContentId查询BizContentFeedback获取feedbackId
+     * 根据planItemId查询最新的BizResourcesContent记录
+     * @param bizPlanItem 计划项目信息
+     */
+    @Override
+    public void fillResourcesContentFields(BizPlanItem bizPlanItem) {
+        if (bizPlanItem == null || bizPlanItem.getItemId() == null) {
+            return;
+        }
+        
+        // 根据planItemId查询最新的BizResourcesContent记录（按创建时间倒序，取第一条）
+        List<BizResourcesContent> resourcesList = bizResourcesContentService.list(
+            new QueryWrapper<BizResourcesContent>()
+                .eq("plan_item_id", bizPlanItem.getItemId())
+                .eq("deleted", 0)
+                .orderByDesc("create_time")
+                .last("LIMIT 1")
+        );
+        
+        if (resourcesList != null && !resourcesList.isEmpty()) {
+            BizResourcesContent resource = resourcesList.get(0);
+            bizPlanItem.setRsThumbnailUrl(resource.getThumbnailUrl());
+            bizPlanItem.setRsFileUrl(resource.getFileUrl());
+            bizPlanItem.setRsContentId(resource.getContentId());
+            
+            // 根据rsContentId查询biz_content_feedback，获取feedbackId
+            if (resource.getContentId() != null) {
+                List<BizContentFeedback> feedbackList = bizContentFeedbackService.list(
+                    new QueryWrapper<BizContentFeedback>()
+                        .eq("content_id", resource.getContentId())
+                        .eq("deleted", 0)
+                        .orderByDesc("create_time")
+                        .last("LIMIT 1")
+                );
+                
+                if (feedbackList != null && !feedbackList.isEmpty()) {
+                    BizContentFeedback feedback = feedbackList.get(0);
+                    bizPlanItem.setFeedbackId(feedback.getFeedbackId());
+                }
+            }
+        }
     }
 
     /**

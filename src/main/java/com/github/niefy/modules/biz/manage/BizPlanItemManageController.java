@@ -53,6 +53,8 @@ public class BizPlanItemManageController {
         if (bizPlanItem != null) {
             bizPlanItem.setPlatformDesc(PlatformUtils.getPlatformDesc(bizPlanItem.getPlatform()));
             bizPlanItem.setContentTagDesc(PlatformUtils.getContentTagDesc(bizPlanItem.getContentTag()));
+            // 关联查询BizResourcesContent，获取缩略图URL和文件URL
+            bizPlanItemService.fillResourcesContentFields(bizPlanItem);
         }
         return R.ok().put("bizPlanItem", bizPlanItem);
     }

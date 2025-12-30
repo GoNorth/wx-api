@@ -76,6 +76,30 @@ public class BizPlanItem implements Serializable {
     private String contentTagDesc;
 
     /**
+     * 缩略图URL,BizResourcesContent的
+     */
+    @TableField(exist = false)
+    private String rsThumbnailUrl;
+
+    /**
+     * 文件URL，图片或视频,BizResourcesContent的
+     */
+    @TableField(exist = false)
+    private String rsFileUrl;
+
+    /**
+     * 资源内容ID，BizResourcesContent的content_id
+     */
+    @TableField(exist = false)
+    private String rsContentId;
+
+    /**
+     * 反馈ID，根据rsContentId查询biz_content_feedback得到的feedbackId
+     */
+    @TableField(exist = false)
+    private String feedbackId;
+
+    /**
      * 产品名称
      */
     private String productName;

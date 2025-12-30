@@ -57,6 +57,11 @@ public class BizSales implements Serializable {
     private String address;
 
     /**
+     * 二维码在线地址URL
+     */
+    private String qrcodeUrl;
+
+    /**
      * 逻辑删除标记字典CODE：0-NOT_DELETED未删除，1-DELETED已删除
      */
     private Integer deleted;
