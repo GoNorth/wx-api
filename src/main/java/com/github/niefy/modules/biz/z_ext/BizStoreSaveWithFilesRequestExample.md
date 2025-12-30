@@ -22,6 +22,7 @@
 | customerGroup | String | 是 | 客户人群：STUDENT-学生，OFFICE_WORKER-上班族，FAMILY-家庭，BUSINESS-商务人士，ELDERLY-老年人，OTHER-其他 | "OFFICE_WORKER" |
 | auditStatus | Integer | 否 | 审核状态：0-待审核，1-已通过，2-已拒绝（默认0） | 0 |
 | auditRemark | String | 否 | 审核备注 | "审核通过" |
+| salesId | String | 否 | 所属销售员ID，关联BIZ_SALES表的SALES_ID | "SALES_001" |
 
 ### 门店VI文件
 

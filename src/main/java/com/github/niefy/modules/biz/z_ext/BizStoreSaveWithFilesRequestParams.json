@@ -77,6 +77,12 @@
         "required": false,
         "description": "审核备注",
         "example": "审核通过"
+      },
+      "salesId": {
+        "type": "String",
+        "required": false,
+        "description": "所属销售员ID，关联BIZ_SALES表的SALES_ID",
+        "example": "SALES_001"
       }
     },
     "门店VI文件": {

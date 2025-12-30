@@ -83,6 +83,11 @@ public class BizStore implements Serializable {
     private String auditRemark;
 
     /**
+     * 所属销售员ID，关联BIZ_SALES表的SALES_ID
+     */
+    private String salesId;
+
+    /**
      * 逻辑删除标记字典CODE：0-NOT_DELETED未删除，1-DELETED已删除
      */
     private Integer deleted;

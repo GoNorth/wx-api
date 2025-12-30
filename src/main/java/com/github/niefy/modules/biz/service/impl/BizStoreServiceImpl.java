@@ -56,6 +56,7 @@ public class BizStoreServiceImpl extends ServiceImpl<BizStoreMapper, BizStore> i
         String cateringType = (String) params.get("cateringType");
         String customerGroup = (String) params.get("customerGroup");
         String auditStatus = (String) params.get("auditStatus");
+        String salesId = (String) params.get("salesId");
 
         QueryWrapper<BizStore> queryWrapper = new QueryWrapper<BizStore>()
                 .eq(StringUtils.hasText(storeId), "store_id", storeId)
@@ -66,6 +67,7 @@ public class BizStoreServiceImpl extends ServiceImpl<BizStoreMapper, BizStore> i
                 .eq(StringUtils.hasText(cateringType), "catering_type", cateringType)
                 .eq(StringUtils.hasText(customerGroup), "customer_group", customerGroup)
                 .eq(StringUtils.hasText(auditStatus), "audit_status", auditStatus)
+                .eq(StringUtils.hasText(salesId), "sales_id", salesId)
                 .orderByDesc("create_time");
         
         // 临时注释掉 deleted 条件，用于调试

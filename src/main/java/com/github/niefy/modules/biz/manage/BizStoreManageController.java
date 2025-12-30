@@ -14,6 +14,7 @@ import com.github.niefy.modules.oss.service.TosStorageService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 // import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,7 +57,7 @@ public class BizStoreManageController {
      * 列表
      */
     @GetMapping("/list")
-    // @RequiresPermissions("biz:bizstore:list")
+    //@RequiresPermissions("biz:bizstore:list")
     @ApiOperation(value = "列表")
     public R list(@RequestParam Map<String, Object> params) {
         PageUtils page = new PageUtils(bizStoreService.queryPage(params));
@@ -145,6 +146,7 @@ public class BizStoreManageController {
      * - customerGroup: "OFFICE_WORKER" (必填，可选值：STUDENT/OFFICE_WORKER/FAMILY/BUSINESS/ELDERLY/OTHER)
      * - auditStatus: "0" (可选，默认0：待审核)
      * - auditRemark: "审核备注" (可选)
+     * - salesId: "SALES_001" (可选，所属销售员ID，关联BIZ_SALES表的SALES_ID)
      * 
      * 门店VI文件（可选）：
      * - logoFile: 门店LOGO文件 (JPG/PNG)
