@@ -7,10 +7,12 @@ import com.github.niefy.modules.biz.service.BizContentFeedbackService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 // import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Map;
 
 /**
@@ -55,6 +57,24 @@ public class BizContentFeedbackManageController {
     // @RequiresPermissions("biz:bizcontentfeedback:save")
     @ApiOperation(value = "保存")
     public R save(@RequestBody BizContentFeedback bizContentFeedback) {
+        // 如果 feedbackId 存在，则查询数据库记录并合并参数
+        if (bizContentFeedback.getFeedbackId() != null && !bizContentFeedback.getFeedbackId().isEmpty()) {
+            BizContentFeedback existingFeedback = bizContentFeedbackService.getById(bizContentFeedback.getFeedbackId());
+            if (existingFeedback != null) {
+                // 保存创建时间（如果用户没有传入，则保留数据库中的值）
+                Date originalCreateTime = existingFeedback.getCreateTime();
+                // 使用 BeanUtils 合并数据：将传入的参数复制到数据库记录中（null 值不会覆盖）
+                BeanUtils.copyProperties(bizContentFeedback, existingFeedback);
+                // 如果用户没有传入创建时间，则保留数据库中的创建时间
+                if (bizContentFeedback.getCreateTime() == null) {
+                    existingFeedback.setCreateTime(originalCreateTime);
+                }
+                // 更新记录
+                bizContentFeedbackService.updateById(existingFeedback);
+                return R.ok();
+            }
+        }
+        // 如果 feedbackId 不存在，则新增
         bizContentFeedbackService.save(bizContentFeedback);
         return R.ok();
     }
