@@ -49,10 +49,60 @@ public class DateKeyUtils {
     }
 
     /**
-     * 根据策略类型转换日期键
-     * 当 strategyType 为 2（周计划表）时，将日期字符串转换为周格式
+     * 检查字符串是否是日期格式（yyyy-MM-dd）
      * 
-     * @param dateKey 日期字符串，格式：yyyy-MM-dd
+     * @param dateKey 待检查的字符串
+     * @return 如果是日期格式返回true，否则返回false
+     */
+    public static boolean isDateFormat(String dateKey) {
+        if (dateKey == null || dateKey.trim().isEmpty()) {
+            return false;
+        }
+        
+        try {
+            LocalDate.parse(dateKey.trim(), DATE_FORMATTER);
+            return true;
+        } catch (DateTimeParseException e) {
+            return false;
+        }
+    }
+
+    /**
+     * 如果dateKey是日期格式，则转换为周格式；否则返回原值
+     * 
+     * @param dateKey 日期键字符串
+     * @return 转换后的日期键（如果是日期格式则转换为WEEK格式，否则返回原值）
+     */
+    public static String convertDateToWeekIfNeeded(String dateKey) {
+        if (dateKey == null || dateKey.trim().isEmpty()) {
+            return dateKey;
+        }
+        
+        // 如果已经是WEEK格式，直接返回
+        if (dateKey.trim().toUpperCase().startsWith("WEEK")) {
+            return dateKey;
+        }
+        
+        // 如果是日期格式，转换为周格式
+        if (isDateFormat(dateKey)) {
+            try {
+                return convertDateToWeek(dateKey);
+            } catch (IllegalArgumentException e) {
+                // 转换失败，返回原值
+                return dateKey;
+            }
+        }
+        
+        // 其他情况返回原值
+        return dateKey;
+    }
+
+    /**
+     * 根据策略类型转换日期键
+     * - strategyType=1（私域复购）：dateKey直接使用原值（如：2025-12-30）
+     * - strategyType=2（公域获客）：dateKey需要转换为周格式（如：WEEK5）
+     * 
+     * @param dateKey 日期键字符串，可能是日期格式（yyyy-MM-dd）或周格式（WEEK1-WEEK4）
      * @param strategyType 策略类型：1-私域复购，2-公域获客（周计划表）
      * @return 转换后的日期键
      */
@@ -61,12 +111,26 @@ public class DateKeyUtils {
             return dateKey;
         }
         
-        // 如果 strategyType 为 2（周计划表），则转换为周格式
+        // 如果 strategyType 为 2（周计划表），需要转换为周格式
         if (strategyType != null && strategyType == 2) {
-            return convertDateToWeek(dateKey);
+            // 如果已经是WEEK格式，直接返回
+            if (dateKey.trim().toUpperCase().startsWith("WEEK")) {
+                return dateKey;
+            }
+            // 如果是日期格式，转换为周格式
+            if (isDateFormat(dateKey)) {
+                try {
+                    return convertDateToWeek(dateKey);
+                } catch (IllegalArgumentException e) {
+                    // 转换失败，返回原值
+                    return dateKey;
+                }
+            }
+            // 其他情况返回原值
+            return dateKey;
         }
         
-        // 其他情况直接返回原值
+        // strategyType=1 或其他情况，直接返回原值
         return dateKey;
     }
 }

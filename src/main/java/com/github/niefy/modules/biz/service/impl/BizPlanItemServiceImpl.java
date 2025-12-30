@@ -109,6 +109,17 @@ public class BizPlanItemServiceImpl extends ServiceImpl<BizPlanItemMapper, BizPl
 
     @Override
     public void saveOrUpdateItem(BizPlanItem bizPlanItem) {
+        // 根据strategyType处理dateKey：
+        // strategyType=1时，dateKey直接使用原值（如：2025-12-30）
+        // strategyType=2时，dateKey需要转换为周格式（如：WEEK5）
+        if (bizPlanItem.getDateKey() != null && !bizPlanItem.getDateKey().trim().isEmpty()) {
+            String convertedDateKey = DateKeyUtils.convertDateKeyByStrategy(
+                    bizPlanItem.getDateKey(), 
+                    bizPlanItem.getStrategyType()
+            );
+            bizPlanItem.setDateKey(convertedDateKey);
+        }
+        
         // 如果传入了itemId，先查询数据库
         if (bizPlanItem.getItemId() != null && !bizPlanItem.getItemId().isEmpty()) {
             String itemId = bizPlanItem.getItemId();

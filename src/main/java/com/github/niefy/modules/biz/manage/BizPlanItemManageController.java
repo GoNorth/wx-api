@@ -8,6 +8,8 @@ import com.github.niefy.modules.biz.service.BizPlanItemService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 // import org.apache.shiro.authz.annotation.RequiresPermissions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +26,8 @@ import java.util.Map;
 @RequestMapping("/manage/bizPlanItem")
 @Api(tags = {"计划项目表-管理后台"})
 public class BizPlanItemManageController {
+    private static final Logger logger = LoggerFactory.getLogger(BizPlanItemManageController.class);
+    
     @Autowired
     private BizPlanItemService bizPlanItemService;
 
@@ -63,8 +67,15 @@ public class BizPlanItemManageController {
     // @RequiresPermissions("biz:bizplanitem:save")
     @ApiOperation(value = "保存或更新计划项目")
     public R save(@RequestBody BizPlanItem bizPlanItem) {
-        bizPlanItemService.saveOrUpdateItem(bizPlanItem);
-        return R.ok();
+        try {
+            logger.info("开始保存计划项目: itemId={}, dateKey={}", bizPlanItem.getItemId(), bizPlanItem.getDateKey());
+            bizPlanItemService.saveOrUpdateItem(bizPlanItem);
+            logger.info("计划项目保存成功: itemId={}", bizPlanItem.getItemId());
+            return R.ok().put("itemId", bizPlanItem.getItemId());
+        } catch (Exception e) {
+            logger.error("计划项目保存失败: {}", e.getMessage(), e);
+            return R.error("保存失败: " + e.getMessage());
+        }
     }
 
     /**
