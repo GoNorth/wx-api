@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.niefy.common.utils.Query;
 import com.github.niefy.modules.biz.dao.BizImageTemplateMapper;
 import com.github.niefy.modules.biz.entity.BizImageTemplate;
+import com.github.niefy.modules.biz.enums.ImageTemplateStatusEnum;
 import com.github.niefy.modules.biz.service.BizImageTemplateService;
 import com.github.niefy.modules.oss.service.TosStorageService;
 import org.slf4j.Logger;
@@ -38,6 +39,7 @@ public class BizImageTemplateServiceImpl extends ServiceImpl<BizImageTemplateMap
     public IPage<BizImageTemplate> queryPage(Map<String, Object> params) {
         String templateId = (String) params.get("templateId");
         String posterType = (String) params.get("posterType");
+        String status = (String) params.get("status");
         String recognitionStatus = (String) params.get("recognitionStatus");
         String recognitionModel = (String) params.get("recognitionModel");
         String taskId = (String) params.get("taskId");
@@ -47,6 +49,7 @@ public class BizImageTemplateServiceImpl extends ServiceImpl<BizImageTemplateMap
             new QueryWrapper<BizImageTemplate>()
                 .eq(StringUtils.hasText(templateId), "template_id", templateId)
                 .eq(StringUtils.hasText(posterType), "poster_type", posterType)
+                .eq(StringUtils.hasText(status), "status", status)
                 .eq(StringUtils.hasText(recognitionStatus), "recognition_status", recognitionStatus)
                 .eq(StringUtils.hasText(recognitionModel), "recognition_model", recognitionModel)
                 .eq(StringUtils.hasText(taskId), "task_id", taskId)
@@ -61,6 +64,9 @@ public class BizImageTemplateServiceImpl extends ServiceImpl<BizImageTemplateMap
         // 设置默认值
         if (bizImageTemplate.getTemplateId() == null || bizImageTemplate.getTemplateId().isEmpty()) {
             bizImageTemplate.setTemplateId(UUID.randomUUID().toString().replace("-", ""));
+        }
+        if (bizImageTemplate.getStatus() == null || bizImageTemplate.getStatus().isEmpty()) {
+            bizImageTemplate.setStatus(ImageTemplateStatusEnum.INIT.getValue());
         }
         if (bizImageTemplate.getDeleted() == null) {
             bizImageTemplate.setDeleted(0);

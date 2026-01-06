@@ -32,6 +32,11 @@ public class BizImageTemplate implements Serializable {
     private String posterType;
 
     /**
+     * 状态：INIT-新建阶段，RECOG-识别阶段，TEST-产品图片测试，PUBLISH-发布使用阶段，INVALID-作废阶段
+     */
+    private String status;
+
+    /**
      * 模板图片URL
      */
     private String templateImageUrl;

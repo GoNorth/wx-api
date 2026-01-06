@@ -3,6 +3,7 @@ package com.github.niefy.modules.biz.manage;
 import com.github.niefy.common.utils.PageUtils;
 import com.github.niefy.common.utils.R;
 import com.github.niefy.modules.biz.entity.BizImageTemplate;
+import com.github.niefy.modules.biz.enums.ImageTemplateStatusEnum;
 import com.github.niefy.modules.biz.service.BizImageTemplateService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -64,6 +65,9 @@ public class BizImageTemplateManageController {
         // 设置默认值
         if (bizImageTemplate.getTemplateId() == null || bizImageTemplate.getTemplateId().isEmpty()) {
             bizImageTemplate.setTemplateId(UUID.randomUUID().toString().replace("-", ""));
+        }
+        if (bizImageTemplate.getStatus() == null || bizImageTemplate.getStatus().isEmpty()) {
+            bizImageTemplate.setStatus(ImageTemplateStatusEnum.INIT.getValue());
         }
         if (bizImageTemplate.getDeleted() == null) {
             bizImageTemplate.setDeleted(0);

@@ -5,6 +5,7 @@
 INSERT INTO `biz_image_template` (
   `template_id`,
   `poster_type`,
+  `status`,
   `template_image_url`,
   `template_image_name`,
   `template_image_desc`,
@@ -22,6 +23,7 @@ INSERT INTO `biz_image_template` (
 ) VALUES (
   'tpl_001_20240115103000',
   '爆款招牌',
+  'PUBLISH',
   'https://example.com/templates/baokuanzhaopai_template.jpg',
   '爆款招牌模板.jpg',
   '爆款招牌海报模板，用于展示热门推荐菜品',
@@ -42,6 +44,7 @@ INSERT INTO `biz_image_template` (
 INSERT INTO `biz_image_template` (
   `template_id`,
   `poster_type`,
+  `status`,
   `template_image_url`,
   `template_image_name`,
   `template_image_desc`,
@@ -59,6 +62,7 @@ INSERT INTO `biz_image_template` (
 ) VALUES (
   'tpl_002_20240115110000',
   '限时优惠',
+  'PUBLISH',
   'https://example.com/templates/xianshiyouhui_template.jpg',
   '限时优惠模板.jpg',
   '限时优惠海报模板，用于展示限时促销活动',
@@ -79,6 +83,7 @@ INSERT INTO `biz_image_template` (
 INSERT INTO `biz_image_template` (
   `template_id`,
   `poster_type`,
+  `status`,
   `template_image_url`,
   `template_image_name`,
   `template_image_desc`,
@@ -96,6 +101,7 @@ INSERT INTO `biz_image_template` (
 ) VALUES (
   'tpl_003_20240115120000',
   '新品上市',
+  'PUBLISH',
   'https://example.com/templates/xinpinshangshi_template.jpg',
   '新品上市模板.jpg',
   '新品上市海报模板，用于展示新推出的产品',
@@ -116,6 +122,7 @@ INSERT INTO `biz_image_template` (
 INSERT INTO `biz_image_template` (
   `template_id`,
   `poster_type`,
+  `status`,
   `template_image_url`,
   `template_image_name`,
   `template_image_desc`,
@@ -133,6 +140,7 @@ INSERT INTO `biz_image_template` (
 ) VALUES (
   'tpl_004_20240115130000',
   '节日节气',
+  'PUBLISH',
   'https://example.com/templates/jierijieqi_template.jpg',
   '节日节气模板.jpg',
   '节日节气海报模板，用于展示节日和节气相关活动',
@@ -153,6 +161,7 @@ INSERT INTO `biz_image_template` (
 INSERT INTO `biz_image_template` (
   `template_id`,
   `poster_type`,
+  `status`,
   `template_image_url`,
   `template_image_name`,
   `template_image_desc`,
@@ -170,6 +179,7 @@ INSERT INTO `biz_image_template` (
 ) VALUES (
   'tpl_005_20240115140000',
   '会员充值',
+  'PUBLISH',
   'https://example.com/templates/huiyuanchongzhi_template.jpg',
   '会员充值模板.jpg',
   '会员充值海报模板，用于展示会员充值优惠活动',
@@ -190,6 +200,7 @@ INSERT INTO `biz_image_template` (
 INSERT INTO `biz_image_template` (
   `template_id`,
   `poster_type`,
+  `status`,
   `template_image_url`,
   `template_image_name`,
   `template_image_desc`,
@@ -207,6 +218,7 @@ INSERT INTO `biz_image_template` (
 ) VALUES (
   'tpl_006_20240115150000',
   '新店开业',
+  'PUBLISH',
   'https://example.com/templates/xindiankaiye_template.jpg',
   '新店开业模板.jpg',
   '新店开业海报模板，用于展示新店开业活动',
@@ -227,6 +239,7 @@ INSERT INTO `biz_image_template` (
 INSERT INTO `biz_image_template` (
   `template_id`,
   `poster_type`,
+  `status`,
   `template_image_url`,
   `template_image_name`,
   `template_image_desc`,
@@ -244,6 +257,7 @@ INSERT INTO `biz_image_template` (
 ) VALUES (
   'tpl_007_20240115160000',
   '组合套餐',
+  'PUBLISH',
   'https://example.com/templates/zuhetaocan_template.jpg',
   '组合套餐模板.jpg',
   '组合套餐海报模板，用于展示套餐组合产品',
@@ -264,6 +278,7 @@ INSERT INTO `biz_image_template` (
 INSERT INTO `biz_image_template` (
   `template_id`,
   `poster_type`,
+  `status`,
   `template_image_url`,
   `template_image_name`,
   `template_image_desc`,
@@ -281,6 +296,7 @@ INSERT INTO `biz_image_template` (
 ) VALUES (
   'tpl_008_20240115170000',
   '爆款招牌',
+  'RECOG',
   'https://example.com/templates/baokuanzhaopai_template_2.jpg',
   '爆款招牌模板2.jpg',
   '爆款招牌海报模板2',
@@ -301,6 +317,7 @@ INSERT INTO `biz_image_template` (
 INSERT INTO `biz_image_template` (
   `template_id`,
   `poster_type`,
+  `status`,
   `template_image_url`,
   `template_image_name`,
   `template_image_desc`,
@@ -318,6 +335,7 @@ INSERT INTO `biz_image_template` (
 ) VALUES (
   'tpl_009_20240115180000',
   '限时优惠',
+  'RECOG',
   'https://example.com/templates/xianshiyouhui_template_2.jpg',
   '限时优惠模板2.jpg',
   '限时优惠海报模板2',

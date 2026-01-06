@@ -6,6 +6,7 @@ CREATE TABLE `biz_image_template` (
   # 业务字段-开始
   # 基础信息
   `poster_type` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '海报类型，如：爆款招牌',
+  `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '状态：INIT-新建阶段，RECOG-识别阶段，TEST-产品图片测试，PUBLISH-发布使用阶段，INVALID-作废阶段',
   
   # 模板图片相关
   `template_image_url` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '模板图片URL',
@@ -30,6 +31,7 @@ CREATE TABLE `biz_image_template` (
   
   PRIMARY KEY (`template_id`) USING BTREE,
   KEY `idx_poster_type` (`poster_type`) USING BTREE,
+  KEY `idx_status` (`status`) USING BTREE,
   KEY `idx_task_id` (`task_id`) USING BTREE,
   KEY `idx_recognition_status` (`recognition_status`) USING BTREE,
   KEY `idx_recognition_model` (`recognition_model`) USING BTREE,
