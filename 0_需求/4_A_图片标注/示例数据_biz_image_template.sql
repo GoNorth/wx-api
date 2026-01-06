@@ -1,0 +1,336 @@
+# biz_image_template 表示例数据
+# 基于截图中的海报类型生成
+
+# 1. 爆款招牌模板
+INSERT INTO `biz_image_template` (
+  `template_id`,
+  `poster_type`,
+  `template_image_url`,
+  `template_image_name`,
+  `template_image_desc`,
+  `task_id`,
+  `recognition_status`,
+  `recognition_model`,
+  `recognition_model_version`,
+  `recognition_prompt`,
+  `recognition_desc`,
+  `recognition_error_info`,
+  `recognition_complete_time`,
+  `deleted`,
+  `create_time`,
+  `update_time`
+) VALUES (
+  'tpl_001_20240115103000',
+  '爆款招牌',
+  'https://example.com/templates/baokuanzhaopai_template.jpg',
+  '爆款招牌模板.jpg',
+  '爆款招牌海报模板，用于展示热门推荐菜品',
+  'task_recog_001_20240115103000',
+  'completed',
+  'Qwen-VL',
+  '1.0.0',
+  '请识别这张海报模板中的所有元素，包括文字、图片、布局等信息',
+  '这是一张爆款招牌海报模板，包含以下元素：1. 顶部标题区域，显示"爆款招牌"字样；2. 中间产品展示区域，包含产品图片和名称；3. 底部价格信息区域，显示价格和优惠信息；4. 整体采用红色和金色配色方案，突出促销氛围。',
+  NULL,
+  '2024-01-15 10:35:00',
+  0,
+  '2024-01-15 10:30:00',
+  '2024-01-15 10:35:00'
+);
+
+# 2. 限时优惠模板
+INSERT INTO `biz_image_template` (
+  `template_id`,
+  `poster_type`,
+  `template_image_url`,
+  `template_image_name`,
+  `template_image_desc`,
+  `task_id`,
+  `recognition_status`,
+  `recognition_model`,
+  `recognition_model_version`,
+  `recognition_prompt`,
+  `recognition_desc`,
+  `recognition_error_info`,
+  `recognition_complete_time`,
+  `deleted`,
+  `create_time`,
+  `update_time`
+) VALUES (
+  'tpl_002_20240115110000',
+  '限时优惠',
+  'https://example.com/templates/xianshiyouhui_template.jpg',
+  '限时优惠模板.jpg',
+  '限时优惠海报模板，用于展示限时促销活动',
+  'task_recog_002_20240115110000',
+  'completed',
+  'Qwen-VL',
+  '1.0.0',
+  '请识别这张限时优惠海报模板的结构和元素',
+  '这是一张限时优惠海报模板，包含以下元素：1. 顶部醒目的"限时优惠"标题；2. 倒计时显示区域；3. 产品展示区域，突出优惠价格；4. 活动时间说明；5. 整体采用橙色和红色配色，营造紧迫感。',
+  NULL,
+  '2024-01-15 11:05:00',
+  0,
+  '2024-01-15 11:00:00',
+  '2024-01-15 11:05:00'
+);
+
+# 3. 新品上市模板
+INSERT INTO `biz_image_template` (
+  `template_id`,
+  `poster_type`,
+  `template_image_url`,
+  `template_image_name`,
+  `template_image_desc`,
+  `task_id`,
+  `recognition_status`,
+  `recognition_model`,
+  `recognition_model_version`,
+  `recognition_prompt`,
+  `recognition_desc`,
+  `recognition_error_info`,
+  `recognition_complete_time`,
+  `deleted`,
+  `create_time`,
+  `update_time`
+) VALUES (
+  'tpl_003_20240115120000',
+  '新品上市',
+  'https://example.com/templates/xinpinshangshi_template.jpg',
+  '新品上市模板.jpg',
+  '新品上市海报模板，用于展示新推出的产品',
+  'task_recog_003_20240115120000',
+  'completed',
+  'Qwen-VL',
+  '1.0.0',
+  '请识别这张新品上市海报模板的设计元素',
+  '这是一张新品上市海报模板，包含以下元素：1. "新品上市"标题，采用新颖的字体设计；2. 产品主图展示区域，突出新品特色；3. 产品介绍文字区域；4. 底部"立即尝鲜"等行动号召按钮；5. 整体采用清新明亮的配色，突出新品的活力。',
+  NULL,
+  '2024-01-15 12:05:00',
+  0,
+  '2024-01-15 12:00:00',
+  '2024-01-15 12:05:00'
+);
+
+# 4. 节日节气模板
+INSERT INTO `biz_image_template` (
+  `template_id`,
+  `poster_type`,
+  `template_image_url`,
+  `template_image_name`,
+  `template_image_desc`,
+  `task_id`,
+  `recognition_status`,
+  `recognition_model`,
+  `recognition_model_version`,
+  `recognition_prompt`,
+  `recognition_desc`,
+  `recognition_error_info`,
+  `recognition_complete_time`,
+  `deleted`,
+  `create_time`,
+  `update_time`
+) VALUES (
+  'tpl_004_20240115130000',
+  '节日节气',
+  'https://example.com/templates/jierijieqi_template.jpg',
+  '节日节气模板.jpg',
+  '节日节气海报模板，用于展示节日和节气相关活动',
+  'task_recog_004_20240115130000',
+  'completed',
+  'Qwen-VL',
+  '1.0.0',
+  '请识别这张节日节气海报模板的内容和结构',
+  '这是一张节日节气海报模板，包含以下元素：1. 节日主题标题，如"春节套餐"、"中秋特惠"等；2. 节日元素装饰，如灯笼、月亮等；3. 节日特色产品展示；4. 节日祝福语；5. 整体采用节日主题配色，如红色、金色等传统节日色彩。',
+  NULL,
+  '2024-01-15 13:05:00',
+  0,
+  '2024-01-15 13:00:00',
+  '2024-01-15 13:05:00'
+);
+
+# 5. 会员充值模板
+INSERT INTO `biz_image_template` (
+  `template_id`,
+  `poster_type`,
+  `template_image_url`,
+  `template_image_name`,
+  `template_image_desc`,
+  `task_id`,
+  `recognition_status`,
+  `recognition_model`,
+  `recognition_model_version`,
+  `recognition_prompt`,
+  `recognition_desc`,
+  `recognition_error_info`,
+  `recognition_complete_time`,
+  `deleted`,
+  `create_time`,
+  `update_time`
+) VALUES (
+  'tpl_005_20240115140000',
+  '会员充值',
+  'https://example.com/templates/huiyuanchongzhi_template.jpg',
+  '会员充值模板.jpg',
+  '会员充值海报模板，用于展示会员充值优惠活动',
+  'task_recog_005_20240115140000',
+  'completed',
+  'Qwen-VL',
+  '1.0.0',
+  '请识别这张会员充值海报模板的布局和内容',
+  '这是一张会员充值海报模板，包含以下元素：1. "会员充值"标题；2. 充值金额选项展示；3. 充值优惠说明，如"充100送20"等；4. 会员权益说明；5. 充值按钮；6. 整体采用会员专属配色，如紫色、金色等，突出尊贵感。',
+  NULL,
+  '2024-01-15 14:05:00',
+  0,
+  '2024-01-15 14:00:00',
+  '2024-01-15 14:05:00'
+);
+
+# 6. 新店开业模板
+INSERT INTO `biz_image_template` (
+  `template_id`,
+  `poster_type`,
+  `template_image_url`,
+  `template_image_name`,
+  `template_image_desc`,
+  `task_id`,
+  `recognition_status`,
+  `recognition_model`,
+  `recognition_model_version`,
+  `recognition_prompt`,
+  `recognition_desc`,
+  `recognition_error_info`,
+  `recognition_complete_time`,
+  `deleted`,
+  `create_time`,
+  `update_time`
+) VALUES (
+  'tpl_006_20240115150000',
+  '新店开业',
+  'https://example.com/templates/xindiankaiye_template.jpg',
+  '新店开业模板.jpg',
+  '新店开业海报模板，用于展示新店开业活动',
+  'task_recog_006_20240115150000',
+  'completed',
+  'Qwen-VL',
+  '1.0.0',
+  '请识别这张新店开业海报模板的设计特点',
+  '这是一张新店开业海报模板，包含以下元素：1. "新店开业"或"开业大礼包"标题；2. 开业优惠活动说明；3. 开业礼品展示；4. 店铺地址和联系方式；5. 开业时间说明；6. 整体采用喜庆的红色和金色配色，营造开业庆典氛围。',
+  NULL,
+  '2024-01-15 15:05:00',
+  0,
+  '2024-01-15 15:00:00',
+  '2024-01-15 15:05:00'
+);
+
+# 7. 组合套餐模板
+INSERT INTO `biz_image_template` (
+  `template_id`,
+  `poster_type`,
+  `template_image_url`,
+  `template_image_name`,
+  `template_image_desc`,
+  `task_id`,
+  `recognition_status`,
+  `recognition_model`,
+  `recognition_model_version`,
+  `recognition_prompt`,
+  `recognition_desc`,
+  `recognition_error_info`,
+  `recognition_complete_time`,
+  `deleted`,
+  `create_time`,
+  `update_time`
+) VALUES (
+  'tpl_007_20240115160000',
+  '组合套餐',
+  'https://example.com/templates/zuhetaocan_template.jpg',
+  '组合套餐模板.jpg',
+  '组合套餐海报模板，用于展示套餐组合产品',
+  'task_recog_007_20240115160000',
+  'completed',
+  'Qwen-VL',
+  '1.0.0',
+  '请识别这张组合套餐海报模板的结构',
+  '这是一张组合套餐海报模板，包含以下元素：1. "组合套餐"或"超值套餐"标题；2. 套餐内容展示区域，列出包含的产品；3. 套餐价格信息，突出优惠；4. 套餐价值说明；5. 购买按钮；6. 整体采用丰富的配色，突出套餐的丰富性和超值感。',
+  NULL,
+  '2024-01-15 16:05:00',
+  0,
+  '2024-01-15 16:00:00',
+  '2024-01-15 16:05:00'
+);
+
+# 8. 待识别状态的模板示例（识别中）
+INSERT INTO `biz_image_template` (
+  `template_id`,
+  `poster_type`,
+  `template_image_url`,
+  `template_image_name`,
+  `template_image_desc`,
+  `task_id`,
+  `recognition_status`,
+  `recognition_model`,
+  `recognition_model_version`,
+  `recognition_prompt`,
+  `recognition_desc`,
+  `recognition_error_info`,
+  `recognition_complete_time`,
+  `deleted`,
+  `create_time`,
+  `update_time`
+) VALUES (
+  'tpl_008_20240115170000',
+  '爆款招牌',
+  'https://example.com/templates/baokuanzhaopai_template_2.jpg',
+  '爆款招牌模板2.jpg',
+  '爆款招牌海报模板2',
+  'task_recog_008_20240115170000',
+  'processing',
+  'Qwen-VL',
+  '1.0.0',
+  '请识别这张海报模板中的所有元素',
+  NULL,
+  NULL,
+  NULL,
+  0,
+  '2024-01-15 17:00:00',
+  '2024-01-15 17:00:00'
+);
+
+# 9. 识别失败的模板示例
+INSERT INTO `biz_image_template` (
+  `template_id`,
+  `poster_type`,
+  `template_image_url`,
+  `template_image_name`,
+  `template_image_desc`,
+  `task_id`,
+  `recognition_status`,
+  `recognition_model`,
+  `recognition_model_version`,
+  `recognition_prompt`,
+  `recognition_desc`,
+  `recognition_error_info`,
+  `recognition_complete_time`,
+  `deleted`,
+  `create_time`,
+  `update_time`
+) VALUES (
+  'tpl_009_20240115180000',
+  '限时优惠',
+  'https://example.com/templates/xianshiyouhui_template_2.jpg',
+  '限时优惠模板2.jpg',
+  '限时优惠海报模板2',
+  'task_recog_009_20240115180000',
+  'failed',
+  'Qwen-VL',
+  '1.0.0',
+  '请识别这张限时优惠海报模板',
+  NULL,
+  '图片格式不支持或图片损坏，无法进行识别',
+  '2024-01-15 18:05:00',
+  0,
+  '2024-01-15 18:00:00',
+  '2024-01-15 18:05:00'
+);
+

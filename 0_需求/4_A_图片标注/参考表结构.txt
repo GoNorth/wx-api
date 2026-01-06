@@ -1,0 +1,25 @@
+CREATE TABLE `biz_content_feedback` (
+  # 表主键
+  `feedback_id` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '主键ID',
+  
+  # 业务字-开始
+  `content_id` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '内容ID',
+  `feedback_type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '反馈类型字典CODE：CHARACTER-人物错误，PRODUCT-产品错误，TEXT-文字错误',
+  `feedback_desc` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '反馈描述，可选',
+  `user_openid` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '用户微信OPENID',
+  `status` tinyint NOT NULL DEFAULT '0' COMMENT '处理状态字典CODE：0-PENDING待处理，1-PROCESSED已处理，2-IGNORED已忽略',
+  `handle_remark` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '处理备注',
+  # 业务字-结束
+
+  # 表控制字段
+  `deleted` tinyint unsigned NOT NULL DEFAULT '0' COMMENT '逻辑删除标记字典CODE：0-NOT_DELETED未删除，1-DELETED已删除',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`feedback_id`) USING BTREE,
+  KEY `idx_content_id` (`content_id`) USING BTREE,
+  KEY `idx_feedback_type` (`feedback_type`) USING BTREE,
+  KEY `idx_status` (`status`) USING BTREE,
+  KEY `idx_deleted` (`deleted`) USING BTREE,
+  KEY `idx_create_time` (`create_time`) USING BTREE,
+  CONSTRAINT `fk_content_feedback_content` FOREIGN KEY (`content_id`) REFERENCES `biz_resources_content` (`content_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ROW_FORMAT=DYNAMIC COMMENT='内容反馈表';
