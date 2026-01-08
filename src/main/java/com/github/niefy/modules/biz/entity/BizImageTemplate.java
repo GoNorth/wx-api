@@ -72,6 +72,11 @@ public class BizImageTemplate implements Serializable {
     private String templateImageDesc;
 
     /**
+     * 标签拼接字段，格式：蔬菜、叶装类、绿色、。。。
+     */
+    private String tags;
+
+    /**
      * 识别任务ID
      */
     private String taskId;

@@ -8,3 +8,9 @@ ADD COLUMN `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
 ALTER TABLE `biz_image_template` 
 ADD INDEX `idx_status`(`status`) USING BTREE COMMENT '状态索引';
 
+-- ----------------------------
+-- Alter table biz_image_template - 添加 tags 字段
+-- ----------------------------
+ALTER TABLE `biz_image_template` 
+ADD COLUMN `tags` varchar(2048) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '标签拼接字段，格式：蔬菜、叶装类、绿色、。。。' AFTER `template_image_desc`;
+
