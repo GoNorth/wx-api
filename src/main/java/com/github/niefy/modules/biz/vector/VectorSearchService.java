@@ -101,6 +101,77 @@ public class VectorSearchService {
             throw new RuntimeException("向量缓存为空，请先执行 /api/vector/init 生成向量数据");
         }
 
+        // 优先使用传统字段查询：posterType 和 tags
+        List<Map<String, Object>> traditionalResults = searchByTraditionalFields(keyword, topK, posterType);
+        
+        // 如果传统查询有结果，直接返回
+        if (traditionalResults != null && !traditionalResults.isEmpty()) {
+            logger.info("使用传统字段查询，找到 {} 条结果", traditionalResults.size());
+            return traditionalResults;
+        }
+
+        // 传统查询无结果，使用向量匹配
+        logger.info("传统字段查询无结果，使用向量匹配");
+        return searchByVector(keyword, topK, posterType);
+    }
+
+    /**
+     * 传统字段查询：posterType 和 tags
+     * @param keyword 搜索关键词
+     * @param topK 返回前K个结果
+     * @param posterType 海报类型过滤（可选，为null时不过滤）
+     * @return 搜索结果列表
+     */
+    private List<Map<String, Object>> searchByTraditionalFields(String keyword, int topK, String posterType) {
+        // 构建 SQL 查询条件
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT template_id, dish_category, price_display, product_type, template_image_desc, tags, poster_type ");
+        sql.append("FROM biz_image_template ");
+        sql.append("WHERE deleted = 0 ");
+        
+        List<Object> params = new ArrayList<>();
+        
+        // 如果指定了 posterType，添加条件
+        if (StringUtils.hasText(posterType)) {
+            sql.append("AND poster_type = ? ");
+            params.add(posterType);
+        }
+        
+        // 如果指定了 keyword，在 tags 字段中搜索
+        if (StringUtils.hasText(keyword)) {
+            sql.append("AND tags LIKE ? ");
+            params.add("%" + keyword + "%");
+        }
+        
+        sql.append("LIMIT ?");
+        params.add(topK);
+        
+        try {
+            List<Map<String, Object>> results = jdbcTemplate.queryForList(sql.toString(), params.toArray());
+            
+            // 构建返回结果，设置 score 为 1.0（表示完全匹配）
+            return results.stream().map(row -> {
+                Map<String, Object> res = new HashMap<>();
+                res.put("template_id", row.get("template_id"));
+                res.put("desc", row.get("template_image_desc"));
+                res.put("poster_type", row.get("poster_type"));
+                res.put("score", 1.0); // 传统查询完全匹配，score 设为 1.0
+                return res;
+            }).collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("传统字段查询失败", e);
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * 向量匹配查询
+     * @param keyword 搜索关键词
+     * @param topK 返回前K个结果
+     * @param posterType 海报类型过滤（可选，为null时不过滤）
+     * @return 搜索结果列表
+     */
+    private List<Map<String, Object>> searchByVector(String keyword, int topK, String posterType) throws Exception {
         // 1. 获取搜索词的向量
         TextEmbedding embedding = new TextEmbedding();
         TextEmbeddingParam param = TextEmbeddingParam.builder()
