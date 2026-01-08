@@ -38,45 +38,45 @@ public class VectorSyncService {
 
     /**
      * 按优先级构建嵌入文本
-     * 优先级：1、dish_category 2、price_display 3、product_type 4、template_image_desc 5、tags
+     * 优先级：1、tags 2、dish_category 3、price_display 4、product_type 5、template_image_desc
      * @param row 数据库行数据
      * @return 组合后的文本
      */
     private String buildEmbeddingText(Map<String, Object> row) {
         StringBuilder text = new StringBuilder();
         
-        // 1. dish_category
+        // 1. tags（优先）
+        Object tags = row.get("tags");
+        if (tags != null && !tags.toString().trim().isEmpty()) {
+            text.append(tags.toString().trim());
+        }
+        
+        // 2. dish_category
         Object dishCategory = row.get("dish_category");
         if (dishCategory != null && !dishCategory.toString().trim().isEmpty()) {
+            if (text.length() > 0) text.append(" ");
             text.append(dishCategory.toString().trim());
         }
         
-        // 2. price_display
+        // 3. price_display
         Object priceDisplay = row.get("price_display");
         if (priceDisplay != null && !priceDisplay.toString().trim().isEmpty()) {
             if (text.length() > 0) text.append(" ");
             text.append(priceDisplay.toString().trim());
         }
         
-        // 3. product_type
+        // 4. product_type
         Object productType = row.get("product_type");
         if (productType != null && !productType.toString().trim().isEmpty()) {
             if (text.length() > 0) text.append(" ");
             text.append(productType.toString().trim());
         }
         
-        // 4. template_image_desc
+        // 5. template_image_desc
         Object templateImageDesc = row.get("template_image_desc");
         if (templateImageDesc != null && !templateImageDesc.toString().trim().isEmpty()) {
             if (text.length() > 0) text.append(" ");
             text.append(templateImageDesc.toString().trim());
-        }
-        
-        // 5. tags
-        Object tags = row.get("tags");
-        if (tags != null && !tags.toString().trim().isEmpty()) {
-            if (text.length() > 0) text.append(" ");
-            text.append(tags.toString().trim());
         }
         
         return text.toString();
