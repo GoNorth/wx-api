@@ -139,7 +139,8 @@ public class VectorSearchService {
         
         // 如果指定了 keyword，在 tags 字段中搜索
         if (StringUtils.hasText(keyword)) {
-            sql.append("AND tags LIKE ? ");
+            // 添加 tags IS NOT NULL 条件，避免 NULL 值导致 LIKE 无法匹配
+            sql.append("AND tags IS NOT NULL AND tags != '' AND tags LIKE ? ");
             params.add("%" + keyword + "%");
         }
         
@@ -147,7 +148,10 @@ public class VectorSearchService {
         params.add(topK);
         
         try {
-            List<Map<String, Object>> results = jdbcTemplate.queryForList(sql.toString(), params.toArray());
+            String finalSql = sql.toString();
+            logger.debug("传统字段查询SQL: {}, 参数: {}", finalSql, params);
+            List<Map<String, Object>> results = jdbcTemplate.queryForList(finalSql, params.toArray());
+            logger.info("传统字段查询完成，找到 {} 条结果，keyword: {}, posterType: {}", results.size(), keyword, posterType);
             
             // 构建返回结果，设置 score 为 1.0（表示完全匹配）
             return results.stream().map(row -> {
@@ -159,7 +163,7 @@ public class VectorSearchService {
                 return res;
             }).collect(Collectors.toList());
         } catch (Exception e) {
-            logger.error("传统字段查询失败", e);
+            logger.error("传统字段查询失败，keyword: {}, posterType: {}", keyword, posterType, e);
             return Collections.emptyList();
         }
     }
@@ -172,6 +176,8 @@ public class VectorSearchService {
      * @return 搜索结果列表
      */
     private List<Map<String, Object>> searchByVector(String keyword, int topK, String posterType) throws Exception {
+        logger.info("开始向量搜索，keyword: {}, posterType: {}, topK: {}", keyword, posterType, topK);
+        
         // 1. 获取搜索词的向量
         TextEmbedding embedding = new TextEmbedding();
         TextEmbeddingParam param = TextEmbeddingParam.builder()
@@ -181,12 +187,13 @@ public class VectorSearchService {
                 .build();
         TextEmbeddingResult result = embedding.call(param);
         List<Double> queryVector = result.getOutput().getEmbeddings().get(0).getEmbedding();
+        logger.debug("搜索词向量生成完成，向量维度: {}", queryVector.size());
 
         // 2. 内存比对计算 (使用并行流加速)
-        return vectorCache.parallelStream()
+        List<Map<String, Object>> results = vectorCache.parallelStream()
                 .filter(item -> item.get("vector_list") != null) // 过滤掉向量为空的记录
                 .filter(item -> {
-                    // 只返回状态为 PUBLISH 的记录
+                    // 只返回状态为 PUBLISH 的记录（虽然缓存中应该都是PUBLISH，但为了安全还是检查）
                     Object itemStatus = item.get("status");
                     if (itemStatus == null || !"PUBLISH".equals(itemStatus.toString())) {
                         return false;
@@ -215,6 +222,9 @@ public class VectorSearchService {
                 .sorted((a, b) -> Double.compare((double) b.get("score"), (double) a.get("score")))
                 .limit(topK)
                 .collect(Collectors.toList());
+        
+        logger.info("向量搜索完成，找到 {} 条结果（相似度>0.3），keyword: {}, posterType: {}", results.size(), keyword, posterType);
+        return results;
     }
 
     /**

@@ -57,6 +57,11 @@ public class BizImageTemplate implements Serializable {
     private String productType;
 
     /**
+     * 模板编号，根据poster_type、dish_category、price_display、product_type、create_time生成
+     */
+    private String templateNo;
+
+    /**
      * 模板图片URL
      */
     private String templateImageUrl;

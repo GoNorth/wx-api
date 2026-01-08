@@ -8,6 +8,7 @@ import com.github.niefy.modules.biz.dao.BizImageTemplateMapper;
 import com.github.niefy.modules.biz.entity.BizImageTemplate;
 import com.github.niefy.modules.biz.enums.ImageTemplateStatusEnum;
 import com.github.niefy.modules.biz.service.BizImageTemplateService;
+import com.github.niefy.modules.biz.utils.TemplateNoGenerator;
 import com.github.niefy.modules.oss.service.TosStorageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -83,6 +84,14 @@ public class BizImageTemplateServiceImpl extends ServiceImpl<BizImageTemplateMap
             bizImageTemplate.setCreateTime(new Date());
         }
         bizImageTemplate.setUpdateTime(new Date());
+
+        // 生成模板编号（如果未设置）
+        if (!StringUtils.hasText(bizImageTemplate.getTemplateNo())) {
+            bizImageTemplate.setTemplateNo(TemplateNoGenerator.generateTemplateNo(
+                    bizImageTemplate.getPosterType(),
+                    bizImageTemplate.getCreateTime()
+            ));
+        }
 
         // 上传模板图片文件
         if (templateImageFile != null && !templateImageFile.isEmpty()) {

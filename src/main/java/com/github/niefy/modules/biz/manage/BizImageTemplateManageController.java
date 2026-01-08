@@ -5,6 +5,8 @@ import com.github.niefy.common.utils.R;
 import com.github.niefy.modules.biz.entity.BizImageTemplate;
 import com.github.niefy.modules.biz.enums.ImageTemplateStatusEnum;
 import com.github.niefy.modules.biz.service.BizImageTemplateService;
+import com.github.niefy.modules.biz.utils.TemplateNoGenerator;
+import com.github.niefy.modules.biz.vector.VectorSearchService;
 import com.github.niefy.modules.biz.vector.VectorSyncService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -14,10 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 图片模板表-管理后台
@@ -37,6 +37,9 @@ public class BizImageTemplateManageController {
     @Autowired
     private VectorSyncService vectorSyncService;
 
+    @Autowired
+    private VectorSearchService vectorSearchService;
+
     /**
      * 列表
      */
@@ -46,6 +49,87 @@ public class BizImageTemplateManageController {
     public R list(@RequestParam Map<String, Object> params) {
         PageUtils page = new PageUtils(bizImageTemplateService.queryPage(params));
         return R.ok().put("page", page);
+    }
+
+    /**
+     * 向量搜索接口（返回格式与list接口一致）
+     * 例：GET /manage/bizImageTemplate/search?keyword=苹果&posterType=爆款招牌&page=1&limit=1
+     */
+    @GetMapping("/search")
+    // @RequiresPermissions("biz:bizimagetemplate:list")
+    @ApiOperation(value = "向量搜索列表")
+    public R search(@RequestParam Map<String, Object> params) {
+        try {
+            // 获取搜索参数
+            String keyword = (String) params.get("keyword");
+            String posterType = (String) params.get("posterType");
+            
+            // 获取分页参数
+            int page = 1;
+            int limit = 1;
+            if (params.get("page") != null) {
+                page = Integer.parseInt(params.get("page").toString());
+            }
+            if (params.get("limit") != null) {
+                limit = Integer.parseInt(params.get("limit").toString());
+            }
+            
+            // 参数校验
+            if (keyword == null || keyword.trim().isEmpty()) {
+                return R.error("keyword参数不能为空");
+            }
+            
+            // 调用向量搜索服务，获取更多结果以便分页（最多1000条）
+            int searchLimit = Math.max(limit * page, 1000); // 至少获取当前页所需的数据量
+            List<Map<String, Object>> searchResults = vectorSearchService.search(keyword.trim(), searchLimit, posterType);
+            
+            if (searchResults == null || searchResults.isEmpty()) {
+                // 没有搜索结果，返回空的分页结果
+                PageUtils pageUtils = new PageUtils(Collections.emptyList(), 0, limit, page);
+                return R.ok().put("page", pageUtils);
+            }
+            
+            // 提取template_id列表
+            List<String> templateIds = searchResults.stream()
+                    .map(result -> (String) result.get("template_id"))
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+            
+            // 手动分页：计算起始索引和结束索引
+            int totalCount = templateIds.size();
+            int startIndex = (page - 1) * limit;
+            int endIndex = Math.min(startIndex + limit, totalCount);
+            
+            // 获取当前页的template_id列表
+            List<String> pageTemplateIds;
+            if (startIndex >= totalCount) {
+                pageTemplateIds = Collections.emptyList();
+            } else {
+                pageTemplateIds = templateIds.subList(startIndex, endIndex);
+            }
+            
+            // 根据template_id列表批量查询完整的BizImageTemplate对象
+            List<BizImageTemplate> templateList;
+            if (pageTemplateIds.isEmpty()) {
+                templateList = Collections.emptyList();
+            } else {
+                templateList = bizImageTemplateService.listByIds(pageTemplateIds);
+                // 保持搜索结果的顺序（按score排序）
+                Map<String, BizImageTemplate> templateMap = templateList.stream()
+                        .collect(Collectors.toMap(BizImageTemplate::getTemplateId, t -> t));
+                templateList = pageTemplateIds.stream()
+                        .map(templateMap::get)
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
+            }
+            
+            // 封装成PageUtils格式返回
+            PageUtils pageUtils = new PageUtils(templateList, totalCount, limit, page);
+            return R.ok().put("page", pageUtils);
+        } catch (Exception e) {
+            logger.error("向量搜索失败", e);
+            return R.error("搜索失败: " + e.getMessage());
+        }
     }
 
     /**
@@ -80,6 +164,14 @@ public class BizImageTemplateManageController {
             bizImageTemplate.setCreateTime(new Date());
         }
         bizImageTemplate.setUpdateTime(new Date());
+        
+        // 生成模板编号（如果未设置）
+        if (bizImageTemplate.getTemplateNo() == null || bizImageTemplate.getTemplateNo().isEmpty()) {
+            bizImageTemplate.setTemplateNo(TemplateNoGenerator.generateTemplateNo(
+                    bizImageTemplate.getPosterType(),
+                    bizImageTemplate.getCreateTime()
+            ));
+        }
         
         bizImageTemplateService.save(bizImageTemplate);
         
