@@ -1,5 +1,7 @@
 package com.github.niefy.modules.biz.manage;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.github.niefy.common.utils.PageUtils;
 import com.github.niefy.common.utils.R;
 import com.github.niefy.modules.biz.entity.BizImageTemplate;
@@ -89,6 +91,23 @@ public class BizImageTemplateManageController {
                 return R.ok().put("page", pageUtils);
             }
             
+            // 创建template_id到score的映射，用于后续添加相似度分数
+            Map<String, Double> scoreMap = searchResults.stream()
+                    .filter(result -> result.get("template_id") != null && result.get("score") != null)
+                    .collect(Collectors.toMap(
+                            result -> (String) result.get("template_id"),
+                            result -> {
+                                Object score = result.get("score");
+                                if (score instanceof Double) {
+                                    return (Double) score;
+                                } else if (score instanceof Number) {
+                                    return ((Number) score).doubleValue();
+                                }
+                                return 0.0;
+                            },
+                            (v1, v2) -> v1 // 如果有重复的template_id，保留第一个score
+                    ));
+            
             // 提取template_id列表
             List<String> templateIds = searchResults.stream()
                     .map(result -> (String) result.get("template_id"))
@@ -109,22 +128,39 @@ public class BizImageTemplateManageController {
             }
             
             // 根据template_id列表批量查询完整的BizImageTemplate对象
-            List<BizImageTemplate> templateList;
+            List<Map<String, Object>> resultList;
             if (pageTemplateIds.isEmpty()) {
-                templateList = Collections.emptyList();
+                resultList = Collections.emptyList();
             } else {
-                templateList = bizImageTemplateService.listByIds(pageTemplateIds);
+                List<BizImageTemplate> templateList = bizImageTemplateService.listByIds(pageTemplateIds);
                 // 保持搜索结果的顺序（按score排序）
                 Map<String, BizImageTemplate> templateMap = templateList.stream()
                         .collect(Collectors.toMap(BizImageTemplate::getTemplateId, t -> t));
-                templateList = pageTemplateIds.stream()
-                        .map(templateMap::get)
+                
+                // 将BizImageTemplate对象转换为Map，并添加相似度分数
+                resultList = pageTemplateIds.stream()
+                        .map(templateId -> {
+                            BizImageTemplate template = templateMap.get(templateId);
+                            if (template == null) {
+                                return null;
+                            }
+                            // 将BizImageTemplate转换为Map
+                            JSONObject resultMap = JSON.parseObject(JSON.toJSONString(template));
+                            // 添加相似度分数（保留2位小数）
+                            Double score = scoreMap.get(templateId);
+                            if (score != null) {
+                                // 保留2位小数
+                                double roundedScore = Math.round(score * 100.0) / 100.0;
+                                resultMap.put("score", roundedScore);
+                            }
+                            return resultMap;
+                        })
                         .filter(Objects::nonNull)
                         .collect(Collectors.toList());
             }
             
             // 封装成PageUtils格式返回
-            PageUtils pageUtils = new PageUtils(templateList, totalCount, limit, page);
+            PageUtils pageUtils = new PageUtils(resultList, totalCount, limit, page);
             return R.ok().put("page", pageUtils);
         } catch (Exception e) {
             logger.error("向量搜索失败", e);

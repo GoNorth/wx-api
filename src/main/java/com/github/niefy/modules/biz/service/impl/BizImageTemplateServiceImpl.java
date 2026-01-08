@@ -45,7 +45,6 @@ public class BizImageTemplateServiceImpl extends ServiceImpl<BizImageTemplateMap
         String dishCategory = (String) params.get("dishCategory");
         String priceDisplay = (String) params.get("priceDisplay");
         String productType = (String) params.get("productType");
-        String recognitionStatus = (String) params.get("recognitionStatus");
         String recognitionModel = (String) params.get("recognitionModel");
         String taskId = (String) params.get("taskId");
 
@@ -59,7 +58,6 @@ public class BizImageTemplateServiceImpl extends ServiceImpl<BizImageTemplateMap
                 .eq(StringUtils.hasText(dishCategory), "dish_category", dishCategory)
                 .eq(StringUtils.hasText(priceDisplay), "price_display", priceDisplay)
                 .eq(StringUtils.hasText(productType), "product_type", productType)
-                .eq(StringUtils.hasText(recognitionStatus), "recognition_status", recognitionStatus)
                 .eq(StringUtils.hasText(recognitionModel), "recognition_model", recognitionModel)
                 .eq(StringUtils.hasText(taskId), "task_id", taskId)
                 .eq("deleted", 0)
