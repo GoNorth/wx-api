@@ -18,6 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.InputStream;
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
@@ -47,6 +50,8 @@ public class BizImageTemplateServiceImpl extends ServiceImpl<BizImageTemplateMap
         String productType = (String) params.get("productType");
         String recognitionModel = (String) params.get("recognitionModel");
         String taskId = (String) params.get("taskId");
+        String templateNo = (String) params.get("templateNo");
+        String recognitionStatus = (String) params.get("recognitionStatus");
 
         return this.page(
             new Query<BizImageTemplate>().getPage(params),
@@ -60,6 +65,8 @@ public class BizImageTemplateServiceImpl extends ServiceImpl<BizImageTemplateMap
                 .eq(StringUtils.hasText(productType), "product_type", productType)
                 .eq(StringUtils.hasText(recognitionModel), "recognition_model", recognitionModel)
                 .eq(StringUtils.hasText(taskId), "task_id", taskId)
+                .eq(StringUtils.hasText(templateNo), "template_no", templateNo)
+                .eq(StringUtils.hasText(recognitionStatus), "recognition_status", recognitionStatus)
                 .eq("deleted", 0)
                 .orderByDesc("create_time")
         );
@@ -100,6 +107,32 @@ public class BizImageTemplateServiceImpl extends ServiceImpl<BizImageTemplateMap
                 fileNameWithoutExt = originalFilename.substring(0, lastDotIndex);
             } else {
                 fileNameWithoutExt = originalFilename;
+            }
+
+            // 自动获取图片尺寸（如果未设置）- 先读取尺寸再上传文件
+            if (bizImageTemplate.getImageWidth() == null || bizImageTemplate.getImageHeight() == null) {
+                try {
+                    InputStream imageInputStream = templateImageFile.getInputStream();
+                    BufferedImage image = ImageIO.read(imageInputStream);
+                    if (image != null) {
+                        if (bizImageTemplate.getImageWidth() == null) {
+                            bizImageTemplate.setImageWidth(image.getWidth());
+                        }
+                        if (bizImageTemplate.getImageHeight() == null) {
+                            bizImageTemplate.setImageHeight(image.getHeight());
+                        }
+                        logger.info("自动获取图片尺寸成功: {}x{}", image.getWidth(), image.getHeight());
+                    }
+                } catch (Exception e) {
+                    logger.warn("获取图片尺寸失败: {}", e.getMessage());
+                    // 如果获取失败，使用默认值
+                    if (bizImageTemplate.getImageWidth() == null) {
+                        bizImageTemplate.setImageWidth(1440);
+                    }
+                    if (bizImageTemplate.getImageHeight() == null) {
+                        bizImageTemplate.setImageHeight(2560);
+                    }
+                }
             }
 
             String cosFileName = fileNameWithoutExt + "_" + bizImageTemplate.getTemplateId();

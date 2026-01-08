@@ -129,6 +129,11 @@ public class BizImageProduct implements Serializable {
     private Date generateCompleteTime;
 
     /**
+     * 图生图反馈字典CODE：positive-正反馈，negative-负反馈
+     */
+    private String generateFeedback;
+
+    /**
      * 逻辑删除标记字典CODE：0-NOT_DELETED未删除，1-DELETED已删除
      */
     private Integer deleted;

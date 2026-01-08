@@ -72,6 +72,16 @@ public class BizImageTemplate implements Serializable {
     private String templateImageName;
 
     /**
+     * 模板图片的宽度（像素）
+     */
+    private Integer imageWidth;
+
+    /**
+     * 模板图片的高度（像素）
+     */
+    private Integer imageHeight;
+
+    /**
      * 模板图片描述
      */
     private String templateImageDesc;

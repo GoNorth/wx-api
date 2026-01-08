@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
@@ -200,6 +201,70 @@ public class BizImageProductManageController {
         } catch (Exception e) {
             logger.error("删除失败", e);
             return R.error("删除失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 提交图生图反馈
+     * 
+     * 请求参数：
+     * - productId: 产品ID（必填）
+     * - feedbackType: 反馈类型（必填），positive-正反馈，negative-负反馈
+     */
+    @PostMapping("/feedback")
+    // @RequiresPermissions("biz:bizimageproduct:feedback")
+    @ApiOperation(value = "提交图生图反馈")
+    public R feedback(@RequestBody Map<String, Object> params, HttpServletRequest request) {
+        try {
+            String productId = (String) params.get("productId");
+            String feedbackType = (String) params.get("feedbackType");
+            
+            // 参数校验
+            if (productId == null || productId.isEmpty()) {
+                logger.error("提交反馈失败，productId不能为空");
+                return R.error("productId不能为空");
+            }
+            
+            if (feedbackType == null || feedbackType.isEmpty()) {
+                logger.error("提交反馈失败，feedbackType不能为空");
+                return R.error("feedbackType不能为空");
+            }
+            
+            // 验证反馈类型
+            if (!"positive".equals(feedbackType) && !"negative".equals(feedbackType)) {
+                logger.error("提交反馈失败，feedbackType值无效: {}", feedbackType);
+                return R.error("feedbackType值无效，必须是positive或negative");
+            }
+            
+            // 查询产品是否存在
+            BizImageProduct product = bizImageProductService.getById(productId);
+            if (product == null) {
+                logger.warn("产品不存在，productId: {}", productId);
+                return R.error("产品不存在");
+            }
+            
+            // 检查产品是否已删除
+            if (product.getDeleted() != null && product.getDeleted() == 1) {
+                logger.warn("产品已删除，无法提交反馈，productId: {}", productId);
+                return R.error("产品已删除，无法提交反馈");
+            }
+            
+            // 更新反馈字段
+            product.setGenerateFeedback(feedbackType);
+            product.setUpdateTime(new Date());
+            
+            boolean success = bizImageProductService.updateById(product);
+            
+            if (success) {
+                logger.info("成功提交反馈，productId: {}, feedbackType: {}", productId, feedbackType);
+                return R.ok();
+            } else {
+                logger.error("提交反馈失败，productId: {}, feedbackType: {}", productId, feedbackType);
+                return R.error("提交反馈失败");
+            }
+        } catch (Exception e) {
+            logger.error("提交反馈失败", e);
+            return R.error("提交反馈失败: " + e.getMessage());
         }
     }
 }
