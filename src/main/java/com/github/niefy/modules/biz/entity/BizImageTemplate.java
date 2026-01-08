@@ -112,6 +112,11 @@ public class BizImageTemplate implements Serializable {
     private String recognitionErrorInfo;
 
     /**
+     * 嵌入数据
+     */
+    private String embeddingData;
+
+    /**
      * 识别完成时间
      */
     private Date recognitionCompleteTime;
