@@ -1,12 +1,17 @@
 package com.github.niefy.modules.biz.manage;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.github.niefy.common.utils.PageUtils;
 import com.github.niefy.common.utils.R;
+import com.github.niefy.modules.biz.entity.BizImageTemplate;
 import com.github.niefy.modules.biz.entity.BizTag;
 import com.github.niefy.modules.biz.entity.BizTagMap;
+import com.github.niefy.modules.biz.service.BizImageTemplateService;
 import com.github.niefy.modules.biz.service.BizTagMapService;
 import com.github.niefy.modules.biz.service.BizTagService;
+import com.github.niefy.modules.biz.vector.VectorSearchService;
+import com.github.niefy.modules.biz.vector.VectorSyncService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
@@ -35,6 +40,15 @@ public class BizTagMapManageController {
 
     @Autowired
     private BizTagService bizTagService;
+
+    @Autowired
+    private BizImageTemplateService bizImageTemplateService;
+
+    @Autowired
+    private VectorSyncService vectorSyncService;
+
+    @Autowired
+    private VectorSearchService vectorSearchService;
 
     /**
      * 列表
@@ -211,6 +225,9 @@ public class BizTagMapManageController {
             bizTagMapService.saveBatch(tagMapsToSave);
         }
         
+        // 更新模板的tags字段
+        updateTemplateTags(templateId);
+        
         return R.ok();
     }
 
@@ -230,7 +247,7 @@ public class BizTagMapManageController {
             return R.error("标签ID不能为空");
         }
         
-        // 查找绑定关系
+        // 查找绑定关系（只查找未删除的记录）
         QueryWrapper<BizTagMap> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("tag_id", tagId)
                     .eq("template_id", templateId)
@@ -238,10 +255,27 @@ public class BizTagMapManageController {
         BizTagMap tagMap = bizTagMapService.getOne(queryWrapper);
         
         if (tagMap != null) {
-            // 逻辑删除
-            tagMap.setDeleted(1);
-            tagMap.setUpdateTime(new Date());
-            bizTagMapService.updateById(tagMap);
+            // 在更新之前，先检查并删除已存在的 deleted=1 的记录（避免唯一约束冲突）
+            QueryWrapper<BizTagMap> deletedQueryWrapper = new QueryWrapper<>();
+            deletedQueryWrapper.eq("tag_id", tagId)
+                              .eq("template_id", templateId)
+                              .eq("deleted", 1);
+            List<BizTagMap> deletedTagMaps = bizTagMapService.list(deletedQueryWrapper);
+            if (!deletedTagMaps.isEmpty()) {
+                // 物理删除已存在的 deleted=1 的记录（因为唯一约束，只能存在一条）
+                List<String> deletedMapIds = deletedTagMaps.stream()
+                        .map(BizTagMap::getMapId)
+                        .collect(Collectors.toList());
+                bizTagMapService.removeByIds(deletedMapIds);
+                logger.info("删除已存在的deleted=1记录，mapIds: {}", deletedMapIds);
+            }
+            
+            // 使用 UpdateWrapper 只更新 deleted 和 update_time 字段
+            UpdateWrapper<BizTagMap> updateWrapper = new UpdateWrapper<>();
+            updateWrapper.eq("map_id", tagMap.getMapId())
+                        .set("deleted", 1)
+                        .set("update_time", new Date());
+            bizTagMapService.update(updateWrapper);
             
             // 更新标签的引用计数
             BizTag tag = bizTagService.getById(tagId);
@@ -250,9 +284,94 @@ public class BizTagMapManageController {
                 tag.setUpdateTime(new Date());
                 bizTagService.updateById(tag);
             }
+        } else {
+            // 如果未找到未删除的记录，检查是否已经删除过
+            QueryWrapper<BizTagMap> deletedQueryWrapper = new QueryWrapper<>();
+            deletedQueryWrapper.eq("tag_id", tagId)
+                              .eq("template_id", templateId)
+                              .eq("deleted", 1);
+            BizTagMap deletedTagMap = bizTagMapService.getOne(deletedQueryWrapper);
+            if (deletedTagMap != null) {
+                // 已经删除过了，直接返回成功
+                logger.info("标签已解绑，tagId: {}, templateId: {}", tagId, templateId);
+            } else {
+                // 记录不存在，返回错误
+                return R.error("未找到该标签绑定关系");
+            }
         }
         
+        // 更新模板的tags字段
+        updateTemplateTags(templateId);
+        
         return R.ok();
+    }
+
+    /**
+     * 更新模板的tags字段（根据绑定的标签列表拼接）
+     * @param templateId 模板ID
+     */
+    private void updateTemplateTags(String templateId) {
+        try {
+            // 查询该模板的所有标签映射
+            QueryWrapper<BizTagMap> queryWrapper = new QueryWrapper<>();
+            queryWrapper.eq("template_id", templateId).eq("deleted", 0);
+            List<BizTagMap> tagMaps = bizTagMapService.list(queryWrapper);
+            
+            String tagsStr = "";
+            if (!tagMaps.isEmpty()) {
+                // 获取所有标签ID
+                List<String> tagIds = tagMaps.stream()
+                        .map(BizTagMap::getTagId)
+                        .collect(Collectors.toList());
+                
+                // 查询标签详情
+                List<BizTag> tags = bizTagService.listByIds(tagIds);
+                
+                // 拼接标签名称，用顿号分隔
+                tagsStr = tags.stream()
+                        .map(BizTag::getTagName)
+                        .filter(name -> name != null && !name.trim().isEmpty())
+                        .collect(Collectors.joining("、"));
+            }
+            
+            // 更新模板的tags字段
+            BizImageTemplate template = bizImageTemplateService.getById(templateId);
+            if (template != null) {
+                template.setTags(tagsStr);
+                template.setUpdateTime(new Date());
+                bizImageTemplateService.updateById(template);
+                
+                // 异步更新embedding_data和刷新缓存（tags字段变化会影响embedding）
+                updateEmbeddingAndRefreshCacheAsync(templateId);
+            }
+        } catch (Exception e) {
+            logger.error("更新模板tags字段失败，templateId: {}", templateId, e);
+        }
+    }
+
+    /**
+     * 异步更新embedding_data和刷新缓存（不阻塞主流程）
+     * @param templateId 模板ID
+     */
+    private void updateEmbeddingAndRefreshCacheAsync(String templateId) {
+        if (templateId == null || templateId.isEmpty()) {
+            return;
+        }
+        
+        // 使用新线程异步更新向量和刷新缓存，避免阻塞主流程
+        new Thread(() -> {
+            try {
+                // 1. 更新embedding_data（因为tags字段变化会影响embedding）
+                vectorSyncService.refreshEmbedding(templateId);
+                logger.info("模板向量更新成功，templateId: {}", templateId);
+                
+                // 2. 刷新缓存，使搜索功能使用最新的向量数据
+                vectorSearchService.reloadCache();
+                logger.info("向量缓存刷新成功");
+            } catch (Exception e) {
+                logger.error("更新模板向量或刷新缓存失败，templateId: " + templateId, e);
+            }
+        }).start();
     }
 }
 

@@ -76,6 +76,11 @@ wx:
   mp:
     # 自动回复消息发送间隔（毫秒），适当增加间隔可提升用户体验
     autoReplyInterval: 1000
+
+# 向量搜索配置
+vector:
+  # 是否在应用启动时自动加载向量缓存，默认 true。以及 false
+  auto-reload-cache: true
 logging:
   level:
     me:

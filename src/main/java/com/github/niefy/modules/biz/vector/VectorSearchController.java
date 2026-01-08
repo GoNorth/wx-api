@@ -37,7 +37,7 @@ public class VectorSearchController {
     /**
      * 手动刷新缓存接口（当数据库新增了向量数据后调用）
      */
-    @GetMapping("/refresh")
+    @GetMapping("/refresh-cache")
     public Map<String, Object> refresh() {
         Map<String, Object> result = new HashMap<>();
         try {

@@ -5,7 +5,10 @@ import com.alibaba.dashscope.embeddings.TextEmbeddingParam;
 import com.alibaba.dashscope.embeddings.TextEmbeddingResult;
 import com.alibaba.fastjson.JSON;
 import com.github.niefy.modules.sys.service.SysConfigService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -17,11 +20,20 @@ import java.util.stream.Collectors;
 @Service
 public class VectorSearchService {
 
+    private static final Logger logger = LoggerFactory.getLogger(VectorSearchService.class);
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
     private SysConfigService sysConfigService;
+
+    /**
+     * 是否在应用启动时自动加载向量缓存
+     * 可通过 application.yml 中的 vector.auto-reload-cache 配置
+     */
+    @Value("${vector.auto-reload-cache:true}")
+    private boolean autoReloadCache;
 
     /**
      * 获取 DashScope API Key
@@ -39,12 +51,28 @@ public class VectorSearchService {
     private List<Map<String, Object>> vectorCache = new ArrayList<>();
 
     /**
-     * 项目启动或手动刷新时，将数据库向量加载到内存
+     * 项目启动时，根据配置决定是否自动加载向量缓存
      */
     @PostConstruct
+    public void init() {
+        if (autoReloadCache) {
+            reloadCache();
+        } else {
+            logger.warn("========================================");
+            logger.warn(">>> 向量缓存自动加载已禁用");
+            logger.warn(">>> 可通过 /api/vector/refresh 手动刷新");
+            logger.warn("========================================");
+        }
+    }
+
+    /**
+     * 手动刷新或启动时自动刷新，将数据库向量加载到内存
+     */
     public void reloadCache() {
         // 只加载有效的向量数据（不为 NULL 且不为空字符串，且未删除）
-        String sql = "SELECT template_id, template_image_desc, poster_type, embedding_data FROM biz_image_template " +
+        // 查询包含所有业务字段，以便在搜索结果中返回完整信息
+        String sql = "SELECT template_id, dish_category, price_display, product_type, template_image_desc, tags, poster_type, embedding_data " +
+                "FROM biz_image_template " +
                 "WHERE embedding_data IS NOT NULL AND embedding_data != '' AND deleted = 0";
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
 
@@ -56,7 +84,9 @@ public class VectorSearchService {
             }
         });
         this.vectorCache = rows;
-        System.out.println(">>> 向量缓存加载完毕，共 " + vectorCache.size() + " 条记录");
+        logger.info("========================================");
+        logger.info(">>> 向量缓存加载完毕，共 {} 条记录", vectorCache.size());
+        logger.info("========================================");
     }
 
     /**

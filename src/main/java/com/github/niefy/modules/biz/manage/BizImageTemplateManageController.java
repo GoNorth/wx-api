@@ -5,6 +5,7 @@ import com.github.niefy.common.utils.R;
 import com.github.niefy.modules.biz.entity.BizImageTemplate;
 import com.github.niefy.modules.biz.enums.ImageTemplateStatusEnum;
 import com.github.niefy.modules.biz.service.BizImageTemplateService;
+import com.github.niefy.modules.biz.vector.VectorSyncService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.slf4j.Logger;
@@ -32,6 +33,9 @@ public class BizImageTemplateManageController {
 
     @Autowired
     private BizImageTemplateService bizImageTemplateService;
+
+    @Autowired
+    private VectorSyncService vectorSyncService;
 
     /**
      * 列表
@@ -78,6 +82,10 @@ public class BizImageTemplateManageController {
         bizImageTemplate.setUpdateTime(new Date());
         
         bizImageTemplateService.save(bizImageTemplate);
+        
+        // 保存成功后，更新向量数据
+        updateEmbeddingAsync(bizImageTemplate.getTemplateId());
+        
         return R.ok();
     }
 
@@ -103,6 +111,10 @@ public class BizImageTemplateManageController {
     ) {
         try {
             bizImageTemplateService.saveWithFile(bizImageTemplate, templateImageFile);
+            
+            // 保存成功后，更新向量数据
+            updateEmbeddingAsync(bizImageTemplate.getTemplateId());
+            
             return R.ok();
         } catch (Exception e) {
             logger.error("保存图片模板失败", e);
@@ -119,6 +131,10 @@ public class BizImageTemplateManageController {
     public R update(@RequestBody BizImageTemplate bizImageTemplate) {
         bizImageTemplate.setUpdateTime(new Date());
         bizImageTemplateService.updateById(bizImageTemplate);
+        
+        // 更新成功后，更新向量数据
+        updateEmbeddingAsync(bizImageTemplate.getTemplateId());
+        
         return R.ok();
     }
 
@@ -130,7 +146,53 @@ public class BizImageTemplateManageController {
     @ApiOperation(value = "删除")
     public R delete(@RequestBody String[] templateIds) {
         bizImageTemplateService.removeByIds(Arrays.asList(templateIds));
+        
+        // 删除成功后，清空向量数据（逻辑删除，清空向量以便搜索时排除）
+        for (String templateId : templateIds) {
+            clearEmbeddingAsync(templateId);
+        }
+        
         return R.ok();
+    }
+
+    /**
+     * 异步更新向量数据（不阻塞主流程）
+     * @param templateId 模板ID
+     */
+    private void updateEmbeddingAsync(String templateId) {
+        if (templateId == null || templateId.isEmpty()) {
+            return;
+        }
+        
+        // 使用新线程异步更新向量，避免阻塞主流程
+        new Thread(() -> {
+            try {
+                vectorSyncService.refreshEmbedding(templateId);
+                logger.info("模板向量更新成功，templateId: {}", templateId);
+            } catch (Exception e) {
+                logger.error("模板向量更新失败，templateId: " + templateId, e);
+            }
+        }).start();
+    }
+
+    /**
+     * 异步清空向量数据（不阻塞主流程）
+     * @param templateId 模板ID
+     */
+    private void clearEmbeddingAsync(String templateId) {
+        if (templateId == null || templateId.isEmpty()) {
+            return;
+        }
+        
+        // 使用新线程异步清空向量，避免阻塞主流程
+        new Thread(() -> {
+            try {
+                vectorSyncService.clearEmbedding(templateId);
+                logger.info("模板向量清空成功，templateId: {}", templateId);
+            } catch (Exception e) {
+                logger.error("模板向量清空失败，templateId: " + templateId, e);
+            }
+        }).start();
     }
 }
 

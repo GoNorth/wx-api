@@ -13,6 +13,9 @@ public class VectorController {
     @Autowired
     private VectorSyncService vectorSyncService;
 
+    @Autowired
+    private VectorSearchService vectorSearchService;
+
     @GetMapping("/init")
     public String init(@RequestParam(defaultValue = "1") int limit,
                       @RequestParam(defaultValue = "false") boolean processAll) {
@@ -36,6 +39,28 @@ public class VectorController {
         } catch (Exception e) {
             e.printStackTrace();
             return "初始化失败: " + e.getMessage();
+        }
+    }
+
+    /**
+     * 刷新单条记录的向量数据
+     * @param templateId 模板ID
+     * @return 处理结果
+     */
+    @GetMapping("/refresh-template")
+    public String refresh(@RequestParam String templateId) {
+        try {
+            boolean success = vectorSyncService.refreshEmbedding(templateId);
+            if (success) {
+                // 刷新成功后，重新加载向量缓存
+                vectorSearchService.reloadCache();
+                return "刷新成功，模板ID: " + templateId;
+            } else {
+                return "刷新失败，模板ID: " + templateId;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "刷新失败: " + e.getMessage();
         }
     }
 }
