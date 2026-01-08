@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Map;
 import java.util.UUID;
@@ -50,30 +49,41 @@ public class BizImageProductManageController {
     // @RequiresPermissions("biz:bizimageproduct:info")
     @ApiOperation(value = "详情")
     public R info(@PathVariable("productId") String productId) {
+        logger.info("获取产品图片详情，productId: {}", productId);
         BizImageProduct bizImageProduct = bizImageProductService.getById(productId);
+        if (bizImageProduct == null) {
+            logger.warn("产品图片不存在，productId: {}", productId);
+            return R.error("产品图片不存在");
+        }
+        logger.info("成功获取产品图片详情，productId: {}", productId);
         return R.ok().put("bizImageProduct", bizImageProduct);
     }
 
     /**
-     * 保存
+     * 保存（新增或更新）
+     * 如果 productId 存在则更新，不存在则新增
      */
     @PostMapping("/save")
     // @RequiresPermissions("biz:bizimageproduct:save")
-    @ApiOperation(value = "保存")
+    @ApiOperation(value = "保存（新增或更新）")
     public R save(@RequestBody BizImageProduct bizImageProduct) {
+        // 判断是新增还是更新
+        boolean isNew = (bizImageProduct.getProductId() == null || bizImageProduct.getProductId().isEmpty());
+        
         // 设置默认值
-        if (bizImageProduct.getProductId() == null || bizImageProduct.getProductId().isEmpty()) {
+        if (isNew) {
             bizImageProduct.setProductId(UUID.randomUUID().toString().replace("-", ""));
         }
         if (bizImageProduct.getDeleted() == null) {
             bizImageProduct.setDeleted(0);
         }
-        if (bizImageProduct.getCreateTime() == null) {
+        if (isNew && bizImageProduct.getCreateTime() == null) {
             bizImageProduct.setCreateTime(new Date());
         }
         bizImageProduct.setUpdateTime(new Date());
         
-        bizImageProductService.save(bizImageProduct);
+        // 使用 saveOrUpdate 方法，自动判断是新增还是更新
+        bizImageProductService.saveOrUpdate(bizImageProduct);
         return R.ok();
     }
 
@@ -85,9 +95,6 @@ public class BizImageProductManageController {
      * 产品基本信息字段：
      * - templateId: "tpl_001_20240115103000" (必填，关联模板ID)
      * - dishName: "宫保鸡丁" (必填)
-     * - dishCategory: "炒菜" (可选)
-     * - priceDisplay: "有价格" (可选)
-     * - productType: "单产品" (可选)
      * - price: "38.00" (可选)
      * - marketingTheme: "新春特惠" (可选)
      * 
@@ -123,14 +130,77 @@ public class BizImageProductManageController {
     }
 
     /**
-     * 删除
+     * 删除（逻辑删除）
+     * 支持两种格式：
+     * 1. 数组格式：["id1", "id2", ...] - 批量删除
+     * 2. 对象格式：{"productId": "id"} 或 {"t":..., "productId": "id"} - 单个删除
      */
     @PostMapping("/delete")
     // @RequiresPermissions("biz:bizimageproduct:delete")
     @ApiOperation(value = "删除")
-    public R delete(@RequestBody String[] productIds) {
-        bizImageProductService.removeByIds(Arrays.asList(productIds));
-        return R.ok();
+    public R delete(@RequestBody Object request) {
+        try {
+            // 如果是数组格式（批量删除）
+            if (request instanceof java.util.List) {
+                @SuppressWarnings("unchecked")
+                java.util.List<String> productIdsList = (java.util.List<String>) request;
+                logger.info("批量删除产品图片，productIds: {}", productIdsList);
+                for (String productId : productIdsList) {
+                    BizImageProduct product = bizImageProductService.getById(productId);
+                    if (product != null && (product.getDeleted() == null || product.getDeleted() == 0)) {
+                        product.setDeleted(1);
+                        product.setUpdateTime(new Date());
+                        bizImageProductService.updateById(product);
+                        logger.info("成功删除产品图片，productId: {}", productId);
+                    } else {
+                        logger.warn("产品图片不存在或已删除，productId: {}", productId);
+                    }
+                }
+            } 
+            // 如果是对象格式（单个删除）
+            else if (request instanceof java.util.Map) {
+                @SuppressWarnings("unchecked")
+                Map<String, Object> requestMap = (Map<String, Object>) request;
+                if (requestMap.containsKey("productId")) {
+                    String productId = String.valueOf(requestMap.get("productId"));
+                    logger.info("删除产品图片，productId: {}", productId);
+                    
+                    BizImageProduct product = bizImageProductService.getById(productId);
+                    if (product == null) {
+                        logger.warn("产品图片不存在，productId: {}", productId);
+                        return R.error("产品图片不存在");
+                    }
+                    
+                    if (product.getDeleted() != null && product.getDeleted() == 1) {
+                        logger.warn("产品图片已删除，productId: {}", productId);
+                        return R.error("产品图片已删除");
+                    }
+                    
+                    // 逻辑删除：设置 deleted = 1
+                    product.setDeleted(1);
+                    product.setUpdateTime(new Date());
+                    boolean success = bizImageProductService.updateById(product);
+                    
+                    if (success) {
+                        logger.info("成功删除产品图片，productId: {}", productId);
+                        return R.ok();
+                    } else {
+                        logger.error("删除产品图片失败，productId: {}", productId);
+                        return R.error("删除失败");
+                    }
+                } else {
+                    logger.error("删除失败，请求对象中未找到 productId 字段，request: {}", requestMap);
+                    return R.error("删除失败：请求格式不正确，缺少 productId 字段");
+                }
+            } else {
+                logger.error("删除失败，不支持的请求格式: {}", request.getClass().getName());
+                return R.error("删除失败：不支持的请求格式");
+            }
+            return R.ok();
+        } catch (Exception e) {
+            logger.error("删除失败", e);
+            return R.error("删除失败: " + e.getMessage());
+        }
     }
 }
 

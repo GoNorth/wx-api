@@ -11,6 +11,7 @@ import com.qcloud.cos.model.PutObjectRequest;
 import com.qcloud.cos.region.Region;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -33,6 +34,17 @@ public class QcloudAbstractCloudStorageService extends AbstractCloudStorageServi
     }
 
     private void init() {
+        // 验证基本配置
+        if (StringUtils.isBlank(config.getQcloudSecretId())) {
+            throw new RRException("腾讯云存储配置不完整：SecretId不能为空，请先在系统配置中设置云存储配置信息");
+        }
+        if (StringUtils.isBlank(config.getQcloudSecretKey())) {
+            throw new RRException("腾讯云存储配置不完整：SecretKey不能为空，请先在系统配置中设置云存储配置信息");
+        }
+        if (StringUtils.isBlank(config.getQcloudRegion())) {
+            throw new RRException("腾讯云存储配置不完整：Region不能为空，请先在系统配置中设置云存储配置信息");
+        }
+        
         COSCredentials credentials = new BasicCOSCredentials(config.getQcloudSecretId(),config.getQcloudSecretKey());
 
         //设置bucket所在的区域，华南：gz 华北：tj 华东：sh
@@ -45,6 +57,9 @@ public class QcloudAbstractCloudStorageService extends AbstractCloudStorageServi
 
     @Override
     public String upload(byte[] data, String path) {
+        // 验证配置是否完整
+        validateConfig();
+        
         //腾讯云必需要以"/"开头
         if (!path.startsWith(SEPARTOR)) {
             path = SEPARTOR + path;
@@ -57,6 +72,27 @@ public class QcloudAbstractCloudStorageService extends AbstractCloudStorageServi
         client.putObject(request);
 
         return config.getQcloudDomain() + path;
+    }
+    
+    /**
+     * 验证腾讯云配置是否完整
+     */
+    private void validateConfig() {
+        if (StringUtils.isBlank(config.getQcloudBucketName())) {
+            throw new RRException("腾讯云存储配置不完整：BucketName不能为空，请先在系统配置中设置云存储配置信息");
+        }
+        if (StringUtils.isBlank(config.getQcloudSecretId())) {
+            throw new RRException("腾讯云存储配置不完整：SecretId不能为空，请先在系统配置中设置云存储配置信息");
+        }
+        if (StringUtils.isBlank(config.getQcloudSecretKey())) {
+            throw new RRException("腾讯云存储配置不完整：SecretKey不能为空，请先在系统配置中设置云存储配置信息");
+        }
+        if (StringUtils.isBlank(config.getQcloudRegion())) {
+            throw new RRException("腾讯云存储配置不完整：Region不能为空，请先在系统配置中设置云存储配置信息");
+        }
+        if (StringUtils.isBlank(config.getQcloudDomain())) {
+            throw new RRException("腾讯云存储配置不完整：Domain不能为空，请先在系统配置中设置云存储配置信息");
+        }
     }
 
     @Override

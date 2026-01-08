@@ -1,8 +1,11 @@
 package com.github.niefy.modules.biz.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.github.niefy.common.handler.JsonArrayToStringDeserializer;
 import com.github.niefy.common.utils.Json;
 import lombok.Data;
 
@@ -33,6 +36,18 @@ public class BizImageProduct implements Serializable {
     private String templateId;
 
     /**
+     * 海报类型（来自biz_image_template表），如：爆款招牌
+     */
+    @TableField(exist = false) // 映射模板表字段
+    private String posterType;
+
+    /**
+     * 菜品分类（来自biz_image_template表），如：炒菜
+     */
+    @TableField(exist = false) // 映射模板表字段
+    private String templateDishCategory;
+
+    /**
      * 菜品名称
      */
     private String dishName;
@@ -41,21 +56,6 @@ public class BizImageProduct implements Serializable {
      * 图片文件名
      */
     private String imageFileName;
-
-    /**
-     * 菜品分类，如：炒菜
-     */
-    private String dishCategory;
-
-    /**
-     * 价格显示：有价格/无价格
-     */
-    private String priceDisplay;
-
-    /**
-     * 产品类型，如：单产品
-     */
-    private String productType;
 
     /**
      * 价格（元）
@@ -110,6 +110,7 @@ public class BizImageProduct implements Serializable {
     /**
      * 生成的图片URL列表，JSON格式存储
      */
+    @JsonDeserialize(using = JsonArrayToStringDeserializer.class)
     private String generatedImages;
 
     /**

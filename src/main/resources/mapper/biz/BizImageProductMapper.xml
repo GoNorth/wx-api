@@ -2,5 +2,81 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.github.niefy.modules.biz.dao.BizImageProductMapper">
 
+    <!-- 结果映射 -->
+    <resultMap id="BizImageProductWithTemplateMap" type="com.github.niefy.modules.biz.entity.BizImageProduct">
+        <id column="product_id" property="productId"/>
+        <result column="template_id" property="templateId"/>
+        <result column="poster_type" property="posterType"/>
+        <result column="template_dish_category" property="templateDishCategory"/>
+        <result column="dish_name" property="dishName"/>
+        <result column="image_file_name" property="imageFileName"/>
+        <result column="price" property="price"/>
+        <result column="marketing_theme" property="marketingTheme"/>
+        <result column="product_image_url" property="productImageUrl"/>
+        <result column="product_image_name" property="productImageName"/>
+        <result column="generate_task_id" property="generateTaskId"/>
+        <result column="generate_status" property="generateStatus"/>
+        <result column="generate_model" property="generateModel"/>
+        <result column="generate_model_version" property="generateModelVersion"/>
+        <result column="generate_prompt" property="generatePrompt"/>
+        <result column="generate_params" property="generateParams"/>
+        <result column="generated_images" property="generatedImages"/>
+        <result column="generated_image_count" property="generatedImageCount"/>
+        <result column="generate_error_info" property="generateErrorInfo"/>
+        <result column="generate_complete_time" property="generateCompleteTime"/>
+        <result column="deleted" property="deleted"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <!-- 分页查询产品图片（关联模板表） -->
+    <select id="queryPageWithTemplate" resultMap="BizImageProductWithTemplateMap">
+        SELECT
+            p.product_id,
+            p.template_id,
+            t.poster_type,
+            t.dish_category AS template_dish_category,
+            p.dish_name,
+            p.image_file_name,
+            p.price,
+            p.marketing_theme,
+            p.product_image_url,
+            p.product_image_name,
+            p.generate_task_id,
+            p.generate_status,
+            p.generate_model,
+            p.generate_model_version,
+            p.generate_prompt,
+            p.generate_params,
+            p.generated_images,
+            p.generated_image_count,
+            p.generate_error_info,
+            p.generate_complete_time,
+            p.deleted,
+            p.create_time,
+            p.update_time
+        FROM biz_image_product p
+        LEFT JOIN biz_image_template t ON p.template_id = t.template_id AND t.deleted = 0
+        <where>
+            p.deleted = 0
+            <if test="productId != null and productId != ''">
+                AND p.product_id = #{productId}
+            </if>
+            <if test="templateId != null and templateId != ''">
+                AND p.template_id = #{templateId}
+            </if>
+            <if test="dishName != null and dishName != ''">
+                AND p.dish_name LIKE CONCAT('%', #{dishName}, '%')
+            </if>
+            <if test="generateStatus != null and generateStatus != ''">
+                AND p.generate_status = #{generateStatus}
+            </if>
+            <if test="generateTaskId != null and generateTaskId != ''">
+                AND p.generate_task_id = #{generateTaskId}
+            </if>
+        </where>
+        ORDER BY p.create_time DESC
+    </select>
+
 </mapper>
 

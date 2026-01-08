@@ -32,9 +32,29 @@ public class BizImageTemplate implements Serializable {
     private String posterType;
 
     /**
-     * 状态：INIT-新建阶段，RECOG-识别阶段，TEST-产品图片测试，PUBLISH-发布使用阶段，INVALID-作废阶段
+     * 海报名称
+     */
+    private String posterName;
+
+    /**
+     * 业务状态，如：RECOG-识别中
      */
     private String status;
+
+    /**
+     * 菜品分类，如：炒菜
+     */
+    private String dishCategory;
+
+    /**
+     * 价格显示：有价格/无价格
+     */
+    private String priceDisplay;
+
+    /**
+     * 产品类型，如：单产品
+     */
+    private String productType;
 
     /**
      * 模板图片URL
@@ -80,6 +100,11 @@ public class BizImageTemplate implements Serializable {
      * 识别描述/识别结果文本（用于图生图的输入）
      */
     private String recognitionDesc;
+
+    /**
+     * 多模态提示词模板，支持变量替换（如：{dish_name}、{marketing_theme}）
+     */
+    private String multimodalPrompt;
 
     /**
      * 识别错误信息

@@ -1,5 +1,8 @@
 package com.github.niefy.modules.oss.service;
 
+import com.github.niefy.common.utils.ConfigConstant;
+import com.github.niefy.modules.oss.cloud.CloudStorageConfig;
+import com.github.niefy.modules.sys.service.SysConfigService;
 import com.qcloud.cos.COSClient;
 import com.qcloud.cos.model.ObjectMetadata;
 import com.qcloud.cos.model.PutObjectRequest;
@@ -11,10 +14,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.UUID;
@@ -29,20 +32,23 @@ public class TosStorageService {
     private static final Logger logger = LoggerFactory.getLogger(TosStorageService.class);
     
     private final COSClient cosClient;
-    private final String bucketName;
-    private final String folder;
-    private final String webUrl;
+    private final SysConfigService sysConfigService;
+    private CloudStorageConfig config;
 
-    public TosStorageService(
-            @Autowired COSClient cosClient,
-            @Value("${cos.bucket-name}") String bucketName,
-            @Value("${cos.folder}") String folder,
-            @Value("${cos.web-url}") String webUrl
-    ) {
+    public TosStorageService(@Autowired COSClient cosClient, @Autowired SysConfigService sysConfigService) {
         this.cosClient = cosClient;
-        this.bucketName = bucketName;
-        this.folder = folder;
-        this.webUrl = webUrl;
+        this.sysConfigService = sysConfigService;
+    }
+    
+    @PostConstruct
+    public void init() {
+        this.config = sysConfigService.getConfigObject(ConfigConstant.CLOUD_STORAGE_CONFIG_KEY, CloudStorageConfig.class);
+        
+        if (config == null || StringUtils.isBlank(config.getQcloudBucketName()) 
+                || StringUtils.isBlank(config.getQcloudPrefix()) 
+                || StringUtils.isBlank(config.getQcloudDomain())) {
+            throw new RuntimeException("腾讯云COS配置不完整，请先在系统配置中设置云存储配置信息");
+        }
     }
 
     /**
@@ -66,6 +72,10 @@ public class TosStorageService {
             sceneWithCosNo = processChineseInFilename(sceneWithCosNo);
         }
         String uniqueFileName = sceneWithCosNo + fileExtension;
+        String folder = config.getQcloudPrefix();
+        if (!folder.endsWith("/")) {
+            folder = folder + "/";
+        }
         String cosKey = folder + uniqueFileName;
         // 构建元数据
         ObjectMetadata metadata = new ObjectMetadata();
@@ -74,10 +84,14 @@ public class TosStorageService {
         // 直接上传，不经过LOGO处理
         try (InputStream inputStream = file.getInputStream()) {
             PutObjectRequest request = new PutObjectRequest(
-                    bucketName, cosKey, inputStream, metadata
+                    config.getQcloudBucketName(), cosKey, inputStream, metadata
             );
             cosClient.putObject(request);
-            return webUrl + "/" + cosKey;
+            String webUrl = config.getQcloudDomain();
+            if (!webUrl.endsWith("/")) {
+                webUrl = webUrl + "/";
+            }
+            return webUrl + cosKey;
         } catch (Exception e) {
             throw new IOException("COS文件上传失败: " + e.getMessage(), e);
         }

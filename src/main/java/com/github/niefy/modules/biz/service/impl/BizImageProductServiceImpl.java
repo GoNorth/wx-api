@@ -1,7 +1,7 @@
 package com.github.niefy.modules.biz.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.niefy.common.utils.Query;
 import com.github.niefy.modules.biz.dao.BizImageProductMapper;
@@ -34,28 +34,26 @@ public class BizImageProductServiceImpl extends ServiceImpl<BizImageProductMappe
     @Autowired
     private TosStorageService storageService;
 
+    @Autowired
+    private BizImageProductMapper bizImageProductMapper;
+
     @Override
     public IPage<BizImageProduct> queryPage(Map<String, Object> params) {
         String productId = (String) params.get("productId");
         String templateId = (String) params.get("templateId");
         String dishName = (String) params.get("dishName");
-        String dishCategory = (String) params.get("dishCategory");
-        String productType = (String) params.get("productType");
         String generateStatus = (String) params.get("generateStatus");
         String generateTaskId = (String) params.get("generateTaskId");
 
-        return this.page(
-            new Query<BizImageProduct>().getPage(params),
-            new QueryWrapper<BizImageProduct>()
-                .eq(StringUtils.hasText(productId), "product_id", productId)
-                .eq(StringUtils.hasText(templateId), "template_id", templateId)
-                .like(StringUtils.hasText(dishName), "dish_name", dishName)
-                .eq(StringUtils.hasText(dishCategory), "dish_category", dishCategory)
-                .eq(StringUtils.hasText(productType), "product_type", productType)
-                .eq(StringUtils.hasText(generateStatus), "generate_status", generateStatus)
-                .eq(StringUtils.hasText(generateTaskId), "generate_task_id", generateTaskId)
-                .eq("deleted", 0)
-                .orderByDesc("create_time")
+        // 使用自定义查询方法，关联查询模板表的poster_type和dish_category字段
+        Page<BizImageProduct> page = (Page<BizImageProduct>) new Query<BizImageProduct>().getPage(params);
+        return bizImageProductMapper.queryPageWithTemplate(
+            page,
+            StringUtils.hasText(productId) ? productId : null,
+            StringUtils.hasText(templateId) ? templateId : null,
+            StringUtils.hasText(dishName) ? dishName : null,
+            StringUtils.hasText(generateStatus) ? generateStatus : null,
+            StringUtils.hasText(generateTaskId) ? generateTaskId : null
         );
     }
 

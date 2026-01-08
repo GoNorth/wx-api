@@ -39,7 +39,11 @@ public class BizImageTemplateServiceImpl extends ServiceImpl<BizImageTemplateMap
     public IPage<BizImageTemplate> queryPage(Map<String, Object> params) {
         String templateId = (String) params.get("templateId");
         String posterType = (String) params.get("posterType");
+        String posterName = (String) params.get("posterName");
         String status = (String) params.get("status");
+        String dishCategory = (String) params.get("dishCategory");
+        String priceDisplay = (String) params.get("priceDisplay");
+        String productType = (String) params.get("productType");
         String recognitionStatus = (String) params.get("recognitionStatus");
         String recognitionModel = (String) params.get("recognitionModel");
         String taskId = (String) params.get("taskId");
@@ -49,7 +53,11 @@ public class BizImageTemplateServiceImpl extends ServiceImpl<BizImageTemplateMap
             new QueryWrapper<BizImageTemplate>()
                 .eq(StringUtils.hasText(templateId), "template_id", templateId)
                 .eq(StringUtils.hasText(posterType), "poster_type", posterType)
+                .like(StringUtils.hasText(posterName), "poster_name", posterName)
                 .eq(StringUtils.hasText(status), "status", status)
+                .eq(StringUtils.hasText(dishCategory), "dish_category", dishCategory)
+                .eq(StringUtils.hasText(priceDisplay), "price_display", priceDisplay)
+                .eq(StringUtils.hasText(productType), "product_type", productType)
                 .eq(StringUtils.hasText(recognitionStatus), "recognition_status", recognitionStatus)
                 .eq(StringUtils.hasText(recognitionModel), "recognition_model", recognitionModel)
                 .eq(StringUtils.hasText(taskId), "task_id", taskId)
