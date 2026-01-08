@@ -69,11 +69,11 @@ public class VectorSearchService {
      * 手动刷新或启动时自动刷新，将数据库向量加载到内存
      */
     public void reloadCache() {
-        // 只加载有效的向量数据（不为 NULL 且不为空字符串，且未删除）
+        // 只加载有效的向量数据（不为 NULL 且不为空字符串，且未删除，且状态为 PUBLISH）
         // 查询包含所有业务字段，以便在搜索结果中返回完整信息
-        String sql = "SELECT template_id, dish_category, price_display, product_type, template_image_desc, tags, poster_type, embedding_data " +
+        String sql = "SELECT template_id, dish_category, price_display, product_type, template_image_desc, tags, poster_type, status, embedding_data " +
                 "FROM biz_image_template " +
-                "WHERE embedding_data IS NOT NULL AND embedding_data != '' AND deleted = 0";
+                "WHERE embedding_data IS NOT NULL AND embedding_data != '' AND deleted = 0 AND status = 'PUBLISH'";
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql);
 
         // 将 JSON 字符串解析为 List<Double> 提高搜索速度
@@ -127,7 +127,7 @@ public class VectorSearchService {
         StringBuilder sql = new StringBuilder();
         sql.append("SELECT template_id, dish_category, price_display, product_type, template_image_desc, tags, poster_type ");
         sql.append("FROM biz_image_template ");
-        sql.append("WHERE deleted = 0 ");
+        sql.append("WHERE deleted = 0 AND status = 'PUBLISH' ");
         
         List<Object> params = new ArrayList<>();
         
@@ -186,6 +186,11 @@ public class VectorSearchService {
         return vectorCache.parallelStream()
                 .filter(item -> item.get("vector_list") != null) // 过滤掉向量为空的记录
                 .filter(item -> {
+                    // 只返回状态为 PUBLISH 的记录
+                    Object itemStatus = item.get("status");
+                    if (itemStatus == null || !"PUBLISH".equals(itemStatus.toString())) {
+                        return false;
+                    }
                     // 如果指定了posterType，则进行过滤
                     if (StringUtils.hasText(posterType)) {
                         Object itemPosterType = item.get("poster_type");
