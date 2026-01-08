@@ -1,4 +1,4 @@
-# wx-api
+# wx-api 1
 微信公众号管理系统，支持多公众号接入。提供公众号菜单、自动回复、公众号素材、模板消息、CMS等管理功能
 
 ### [📖使用文档](https://www.yuque.com/nifury/wx)  | [Github仓库](https://github.com/niefy/wx-api) | [码云仓库](https://gitee.com/niefy/wx-api)
