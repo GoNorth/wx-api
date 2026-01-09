@@ -7,7 +7,7 @@
 
 # biz_form_component 表示例数据
 
-# 1. 单行输入框
+# 1. 促销信息标题（注：海报主标题）
 INSERT INTO `biz_form_component` (
   `component_id`,
   `component_type`,
@@ -25,11 +25,11 @@ INSERT INTO `biz_form_component` (
 ) VALUES (
   'comp_001',
   'INPUT',
-  'dish_name',
-  '菜品名称',
-  '菜品名称',
-  '单行文本输入框，用于输入菜品名称',
-  '{"placeholder":"请输入菜品名称","required":true,"maxLength":100,"minLength":1}',
+  'sub_title',
+  '促销信息标题',
+  '促销信息标题（注：海报主标题）',
+  '单行文本输入框，用于输入促销信息标题（注：海报主标题）',
+  '{"placeholder":"请输入促销信息标题","required":true,"maxLength":256,"minLength":1}',
   NULL,
   1,
   'ACTIVE',
@@ -38,7 +38,7 @@ INSERT INTO `biz_form_component` (
   NOW()
 );
 
-# 2. 多行输入框
+# 2. 节气名称
 INSERT INTO `biz_form_component` (
   `component_id`,
   `component_type`,
@@ -55,12 +55,12 @@ INSERT INTO `biz_form_component` (
   `update_time`
 ) VALUES (
   'comp_002',
-  'TEXTAREA',
-  'dish_desc',
-  '菜品描述',
-  '菜品描述',
-  '多行文本输入框，用于输入菜品描述',
-  '{"placeholder":"请输入菜品描述","required":false,"maxLength":500,"rows":4}',
+  'INPUT',
+  'seasonal_name',
+  '节气名称',
+  '节气名称（以海报类型生效：[节气产品]）',
+  '单行文本输入框，用于输入节气名称',
+  '{"placeholder":"请输入节气名称","required":false,"maxLength":256}',
   NULL,
   2,
   'ACTIVE',
@@ -69,7 +69,7 @@ INSERT INTO `biz_form_component` (
   NOW()
 );
 
-# 3. 下拉框
+# 3. 产品价格（文本格式）
 INSERT INTO `biz_form_component` (
   `component_id`,
   `component_type`,
@@ -86,13 +86,13 @@ INSERT INTO `biz_form_component` (
   `update_time`
 ) VALUES (
   'comp_003',
-  'SELECT',
-  'dish_category',
-  '菜品分类',
-  '菜品分类',
-  '下拉选择框，用于选择菜品分类',
-  '{"placeholder":"请选择菜品分类","required":true}',
-  '[{"label":"炒菜","value":"炒菜"},{"label":"汤类","value":"汤类"},{"label":"凉菜","value":"凉菜"},{"label":"主食","value":"主食"}]',
+  'INPUT',
+  'price_str',
+  '产品价格',
+  '产品价格（如：土豆 0.99元/斤）',
+  '单行文本输入框，用于输入产品价格',
+  '{"placeholder":"请输入产品价格，如：土豆 0.99元/斤","required":false,"maxLength":256}',
+  NULL,
   3,
   'ACTIVE',
   0,
@@ -100,7 +100,7 @@ INSERT INTO `biz_form_component` (
   NOW()
 );
 
-# 4. 数字输入框
+# 4. 产品名称
 INSERT INTO `biz_form_component` (
   `component_id`,
   `component_type`,
@@ -117,12 +117,12 @@ INSERT INTO `biz_form_component` (
   `update_time`
 ) VALUES (
   'comp_004',
-  'NUMBER',
-  'price',
-  '价格',
-  '价格（元）',
-  '数字输入框，用于输入价格',
-  '{"placeholder":"请输入价格","required":true,"min":0,"max":9999,"precision":2,"step":0.01}',
+  'INPUT',
+  'product_name',
+  '产品名称',
+  '产品名称',
+  '单行文本输入框，用于输入产品名称',
+  '{"placeholder":"请输入产品名称","required":false,"maxLength":256}',
   NULL,
   4,
   'ACTIVE',
@@ -131,7 +131,7 @@ INSERT INTO `biz_form_component` (
   NOW()
 );
 
-# 5. 日期选择器
+# 5. 产品价格（多行格式）
 INSERT INTO `biz_form_component` (
   `component_id`,
   `component_type`,
@@ -148,12 +148,12 @@ INSERT INTO `biz_form_component` (
   `update_time`
 ) VALUES (
   'comp_005',
-  'DATE',
-  'promotion_date',
-  '促销日期',
-  '促销日期',
-  '日期选择器，用于选择促销日期',
-  '{"placeholder":"请选择促销日期","required":false,"format":"YYYY-MM-DD"}',
+  'TEXTAREA',
+  'product_price',
+  '产品价格',
+  '产品价格(##格式：牛排&79.9\换行\番茄&3.9)',
+  '多行文本输入框，用于输入产品价格，格式：牛排&79.9\换行\番茄&3.9',
+  '{"placeholder":"请输入产品价格，格式：牛排&79.9\\换行\\番茄&3.9","required":true,"maxLength":1024,"rows":4}',
   NULL,
   5,
   'ACTIVE',
@@ -162,7 +162,7 @@ INSERT INTO `biz_form_component` (
   NOW()
 );
 
-# 6. 日期时间选择器
+# 6. 促销信息
 INSERT INTO `biz_form_component` (
   `component_id`,
   `component_type`,
@@ -179,12 +179,12 @@ INSERT INTO `biz_form_component` (
   `update_time`
 ) VALUES (
   'comp_006',
-  'DATETIME',
-  'start_time',
-  '开始时间',
-  '开始时间',
-  '日期时间选择器，用于选择开始时间',
-  '{"placeholder":"请选择开始时间","required":true,"format":"YYYY-MM-DD HH:mm:ss"}',
+  'INPUT',
+  'promotion_input',
+  '促销信息',
+  '促销信息',
+  '单行文本输入框，用于输入促销信息',
+  '{"placeholder":"请输入促销信息","required":false,"maxLength":256}',
   NULL,
   6,
   'ACTIVE',
@@ -193,7 +193,7 @@ INSERT INTO `biz_form_component` (
   NOW()
 );
 
-# 7. 单选框
+# 7. 节日主题名称
 INSERT INTO `biz_form_component` (
   `component_id`,
   `component_type`,
@@ -210,13 +210,13 @@ INSERT INTO `biz_form_component` (
   `update_time`
 ) VALUES (
   'comp_007',
-  'RADIO',
-  'price_display',
-  '价格显示',
-  '价格显示',
-  '单选框，用于选择价格显示方式',
-  '{"required":true}',
-  '[{"label":"有价格","value":"有价格"},{"label":"无价格","value":"无价格"}]',
+  'INPUT',
+  'festival_theme',
+  '节日主题名称',
+  '节日主题名称（以海报类型生效：[节日场景]）',
+  '单行文本输入框，用于输入节日主题名称',
+  '{"placeholder":"请输入节日主题名称","required":false,"maxLength":256}',
+  NULL,
   7,
   'ACTIVE',
   0,
@@ -224,7 +224,7 @@ INSERT INTO `biz_form_component` (
   NOW()
 );
 
-# 8. 多选框
+# 8. 美术风格类型（*Agent模式）
 INSERT INTO `biz_form_component` (
   `component_id`,
   `component_type`,
@@ -241,13 +241,13 @@ INSERT INTO `biz_form_component` (
   `update_time`
 ) VALUES (
   'comp_008',
-  'CHECKBOX',
-  'marketing_tags',
-  '营销标签',
-  '营销标签',
-  '多选框，用于选择营销标签',
-  '{"required":false}',
-  '[{"label":"新春特惠","value":"新春特惠"},{"label":"限时优惠","value":"限时优惠"},{"label":"会员专享","value":"会员专享"},{"label":"新品上市","value":"新品上市"}]',
+  'SELECT',
+  'style_type',
+  '美术风格类型',
+  '美术风格类型（*Agent模式）',
+  '下拉选择框，用于选择美术风格类型',
+  '{"placeholder":"请选择美术风格类型","required":false}',
+  '[{"label":"国风插画","value":"国风插画"},{"label":"3D卡通","value":"3D卡通"},{"label":"写实摄影","value":"写实摄影"}]',
   8,
   'ACTIVE',
   0,
@@ -255,7 +255,7 @@ INSERT INTO `biz_form_component` (
   NOW()
 );
 
-# 9. 开关
+# 9. 年代(*Agent模式)
 INSERT INTO `biz_form_component` (
   `component_id`,
   `component_type`,
@@ -272,76 +272,14 @@ INSERT INTO `biz_form_component` (
   `update_time`
 ) VALUES (
   'comp_009',
-  'SWITCH',
-  'is_hot',
-  '是否热门',
-  '是否热门',
-  '开关组件，用于设置是否热门',
-  '{"defaultValue":false}',
-  NULL,
+  'SELECT',
+  'age_level',
+  '年代',
+  '年代(*Agent模式)',
+  '下拉选择框，用于选择年代',
+  '{"placeholder":"请选择年代","required":false}',
+  '[{"label":"现代","value":"现代"},{"label":"1980年代","value":"1980年代"}]',
   9,
-  'ACTIVE',
-  0,
-  NOW(),
-  NOW()
-);
-
-# 10. 文件上传
-INSERT INTO `biz_form_component` (
-  `component_id`,
-  `component_type`,
-  `component_code`,
-  `component_name`,
-  `component_label`,
-  `component_desc`,
-  `component_config`,
-  `options_config`,
-  `sort_order`,
-  `status`,
-  `deleted`,
-  `create_time`,
-  `update_time`
-) VALUES (
-  'comp_010',
-  'UPLOAD',
-  'product_image',
-  '产品图片',
-  '产品图片',
-  '文件上传组件，用于上传产品图片',
-  '{"required":true,"accept":"image/*","maxSize":5242880,"maxCount":1,"listType":"picture-card"}',
-  NULL,
-  10,
-  'ACTIVE',
-  0,
-  NOW(),
-  NOW()
-);
-
-# 11. 富文本编辑器
-INSERT INTO `biz_form_component` (
-  `component_id`,
-  `component_type`,
-  `component_code`,
-  `component_name`,
-  `component_label`,
-  `component_desc`,
-  `component_config`,
-  `options_config`,
-  `sort_order`,
-  `status`,
-  `deleted`,
-  `create_time`,
-  `update_time`
-) VALUES (
-  'comp_011',
-  'RICH_TEXT',
-  'activity_details',
-  '活动详情',
-  '活动详情',
-  '富文本编辑器，用于编辑活动详情',
-  '{"required":false,"height":300}',
-  NULL,
-  11,
   'ACTIVE',
   0,
   NOW(),
@@ -373,29 +311,6 @@ INSERT INTO `biz_form_scenario` (
   NOW()
 );
 
-# 2. 产品信息录入场景
-INSERT INTO `biz_form_scenario` (
-  `scenario_id`,
-  `scenario_code`,
-  `scenario_name`,
-  `scenario_desc`,
-  `sort_order`,
-  `status`,
-  `deleted`,
-  `create_time`,
-  `update_time`
-) VALUES (
-  'scenario_002',
-  'product_info',
-  '产品信息录入',
-  '产品信息录入场景，用于录入产品基本信息',
-  2,
-  'ACTIVE',
-  0,
-  NOW(),
-  NOW()
-);
-
 # biz_form_scenario_component 表示例数据
 
 # 图片标注场景的组件关联
@@ -414,26 +329,8 @@ INSERT INTO `biz_form_scenario_component` (
 ('rel_002', 'scenario_001', 'comp_002', NULL, 2, 'ACTIVE', 0, NOW(), NOW()),
 ('rel_003', 'scenario_001', 'comp_003', NULL, 3, 'ACTIVE', 0, NOW(), NOW()),
 ('rel_004', 'scenario_001', 'comp_004', NULL, 4, 'ACTIVE', 0, NOW(), NOW()),
-('rel_005', 'scenario_001', 'comp_007', NULL, 5, 'ACTIVE', 0, NOW(), NOW()),
-('rel_006', 'scenario_001', 'comp_008', NULL, 6, 'ACTIVE', 0, NOW(), NOW()),
-('rel_007', 'scenario_001', 'comp_010', NULL, 7, 'ACTIVE', 0, NOW(), NOW());
-
-# 产品信息录入场景的组件关联
-INSERT INTO `biz_form_scenario_component` (
-  `relation_id`,
-  `scenario_id`,
-  `component_id`,
-  `component_config_override`,
-  `sort_order`,
-  `status`,
-  `deleted`,
-  `create_time`,
-  `update_time`
-) VALUES 
-('rel_008', 'scenario_002', 'comp_001', NULL, 1, 'ACTIVE', 0, NOW(), NOW()),
-('rel_009', 'scenario_002', 'comp_002', NULL, 2, 'ACTIVE', 0, NOW(), NOW()),
-('rel_010', 'scenario_002', 'comp_003', NULL, 3, 'ACTIVE', 0, NOW(), NOW()),
-('rel_011', 'scenario_002', 'comp_004', NULL, 4, 'ACTIVE', 0, NOW(), NOW()),
-('rel_012', 'scenario_002', 'comp_005', NULL, 5, 'ACTIVE', 0, NOW(), NOW()),
-('rel_013', 'scenario_002', 'comp_011', NULL, 6, 'ACTIVE', 0, NOW(), NOW());
-
+('rel_005', 'scenario_001', 'comp_005', NULL, 5, 'ACTIVE', 0, NOW(), NOW()),
+('rel_006', 'scenario_001', 'comp_006', NULL, 6, 'ACTIVE', 0, NOW(), NOW()),
+('rel_007', 'scenario_001', 'comp_007', NULL, 7, 'ACTIVE', 0, NOW(), NOW()),
+('rel_008', 'scenario_001', 'comp_008', NULL, 8, 'ACTIVE', 0, NOW(), NOW()),
+('rel_009', 'scenario_001', 'comp_009', NULL, 9, 'ACTIVE', 0, NOW(), NOW());
