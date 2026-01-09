@@ -1,13 +1,18 @@
 package com.github.niefy.modules.biz.entity;
 
+import com.alibaba.fastjson.annotation.JSONField;
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.niefy.common.utils.Json;
+import com.github.niefy.modules.biz.entity.BizImageProduct;
 import lombok.Data;
 
 import java.io.Serializable;
 import java.util.Date;
+import java.util.List;
 
 /**
  * 图片模板表
@@ -132,14 +137,21 @@ public class BizImageTemplate implements Serializable {
     private String recognitionErrorInfo;
 
     /**
-     * 嵌入数据
+     * 嵌入数据（不参与前后端交互）
      */
+    @JsonIgnore // Jackson注解：序列化和反序列化时忽略
+    @JSONField(serialize = false, deserialize = false) // Fastjson注解：序列化和反序列化时忽略
     private String embeddingData;
 
     /**
      * 识别完成时间
      */
     private Date recognitionCompleteTime;
+
+    /**
+     * 表单场景ID，关联biz_form_scenario表，用于记录选择了哪个场景控件form
+     */
+    private String formScenarioId;
 
     /**
      * 逻辑删除标记字典CODE：0-NOT_DELETED未删除，1-DELETED已删除
@@ -155,6 +167,14 @@ public class BizImageTemplate implements Serializable {
      * 更新时间
      */
     private Date updateTime;
+
+    /**
+     * 产品列表（不参与前后端交互，数据量太大）
+     */
+    @TableField(exist = false) // MyBatis-Plus注解：非数据库字段
+    @JsonIgnore // Jackson注解：序列化和反序列化时忽略
+    @JSONField(serialize = false, deserialize = false) // Fastjson注解：序列化和反序列化时忽略
+    private List<BizImageProduct> productList;
 
     @Override
     public String toString() {

@@ -129,6 +129,16 @@ public class BizImageProduct implements Serializable {
     private Date generateCompleteTime;
 
     /**
+     * 表单场景ID，关联biz_form_scenario表，用于记录选择了哪个场景控件form
+     */
+    private String formScenarioId;
+
+    /**
+     * 表单场景JSON，保存控件列表的具体值，JSON格式存储
+     */
+    private String formScenarioJson;
+
+    /**
      * 图生图反馈字典CODE：positive-正反馈，negative-负反馈
      */
     private String generateFeedback;
