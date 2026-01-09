@@ -1,0 +1,178 @@
+{
+  "分析说明": {
+    "分析对象": "Dify 工作流 YAML 文件",
+    "提取位置": "workflow.graph.nodes 中 type: start 节点的 variables 字段",
+    "去重规则": "按 variable（变量名）去重，保留第一个出现的配置"
+  },
+  "已分析文件": [
+    "工作流-企业信息维护.yml"
+  ],
+  "输入参数": [
+    {
+      "variable": "user_name",
+      "label": "用户名称",
+      "type": "select",
+      "required": true,
+      "max_length": 10,
+      "options": [
+        "销售_01",
+        "销售_02",
+        "销售_03",
+        "测试_01",
+        "测试_02",
+        "测试_03",
+        "孙习康",
+        "李清平",
+        "徐诗然",
+        "刘远忠",
+        "石汪玲"
+      ],
+      "allowed_file_types": ["image"],
+      "allowed_file_upload_methods": ["local_file"],
+      "source_file": "工作流-企业信息维护.yml"
+    },
+    {
+      "variable": "image_boss",
+      "label": "老板照片",
+      "type": "file",
+      "required": false,
+      "max_length": 48,
+      "options": [],
+      "allowed_file_types": ["image"],
+      "allowed_file_upload_methods": ["local_file"],
+      "source_file": "工作流-企业信息维护.yml"
+    },
+    {
+      "variable": "image_logo",
+      "label": "LOGO图片",
+      "type": "file",
+      "required": false,
+      "max_length": 48,
+      "options": [
+        "1左上角",
+        "2右上角",
+        "3左下角",
+        "4右下角",
+        "5上中线",
+        "6下中线"
+      ],
+      "allowed_file_types": ["image"],
+      "allowed_file_upload_methods": ["local_file"],
+      "source_file": "工作流-企业信息维护.yml"
+    },
+    {
+      "variable": "audio_boss",
+      "label": "老板声音",
+      "type": "file",
+      "required": false,
+      "max_length": 48,
+      "options": [
+        "1左上角",
+        "2右上角",
+        "3左下角",
+        "4右下角",
+        "5上中线",
+        "6下中线"
+      ],
+      "allowed_file_types": ["audio"],
+      "allowed_file_upload_methods": ["local_file"],
+      "source_file": "工作流-企业信息维护.yml"
+    },
+    {
+      "variable": "image_shops",
+      "label": "门店照片",
+      "type": "file-list",
+      "required": false,
+      "max_length": 5,
+      "options": [
+        "销售_01",
+        "销售_02",
+        "销售_03",
+        "测试_01",
+        "测试_02",
+        "测试_03"
+      ],
+      "allowed_file_types": ["image"],
+      "allowed_file_upload_methods": ["local_file"],
+      "source_file": "工作流-企业信息维护.yml"
+    },
+    {
+      "variable": "image_desktops",
+      "label": "柜台摊位照片",
+      "type": "file-list",
+      "required": false,
+      "max_length": 5,
+      "options": [],
+      "allowed_file_types": ["image"],
+      "allowed_file_upload_methods": ["local_file"],
+      "source_file": "工作流-企业信息维护.yml"
+    },
+    {
+      "variable": "image_goods",
+      "label": "过往商品实拍图",
+      "type": "file-list",
+      "required": false,
+      "max_length": 10,
+      "options": [],
+      "allowed_file_types": ["image"],
+      "allowed_file_upload_methods": ["local_file"],
+      "source_file": "工作流-企业信息维护.yml"
+    },
+    {
+      "variable": "enter_name",
+      "label": "企业名称",
+      "type": "text-input",
+      "required": true,
+      "max_length": 256,
+      "options": [],
+      "source_file": "工作流-企业信息维护.yml"
+    },
+    {
+      "variable": "enter_desc",
+      "label": "企业扩展描述",
+      "type": "paragraph",
+      "required": false,
+      "max_length": 1024,
+      "options": [],
+      "source_file": "工作流-企业信息维护.yml"
+    },
+    {
+      "variable": "base_audio_type",
+      "label": "基础声音",
+      "type": "select",
+      "required": false,
+      "max_length": 48,
+      "options": [
+        "基础男声",
+        "基础女声"
+      ],
+      "source_file": "工作流-企业信息维护.yml"
+    },
+    {
+      "variable": "enter_clothing",
+      "label": "企业服装(上衣)",
+      "type": "file",
+      "required": false,
+      "max_length": 5,
+      "options": [],
+      "allowed_file_types": ["image"],
+      "allowed_file_upload_methods": ["local_file"],
+      "source_file": "工作流-企业信息维护.yml"
+    }
+  ],
+  "统计信息": {
+    "总参数数": 11,
+    "必填参数": 2,
+    "可选参数": 9,
+    "文件类型参数": 7,
+    "文本类型参数": 4,
+    "类型分布": {
+      "select": 2,
+      "file": 4,
+      "file-list": 3,
+      "text-input": 1,
+      "paragraph": 1
+    }
+  }
+}
+
