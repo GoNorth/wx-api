@@ -1,5 +1,7 @@
 package com.github.niefy.modules.biz.manage;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.github.niefy.common.utils.PageUtils;
 import com.github.niefy.common.utils.R;
 import com.github.niefy.modules.biz.entity.BizImageProduct;
@@ -85,7 +87,10 @@ public class BizImageProductManageController {
         
         // 使用 saveOrUpdate 方法，自动判断是新增还是更新
         bizImageProductService.saveOrUpdate(bizImageProduct);
-        return R.ok();
+        
+        // 保存成功后，重新查询记录以确保返回最新数据
+        BizImageProduct savedProduct = bizImageProductService.getById(bizImageProduct.getProductId());
+        return R.ok().put("bizImageProduct", savedProduct);
     }
 
     /**
@@ -125,9 +130,51 @@ public class BizImageProductManageController {
     // @RequiresPermissions("biz:bizimageproduct:update")
     @ApiOperation(value = "修改")
     public R update(@RequestBody BizImageProduct bizImageProduct) {
+        // 参数校验
+        if (bizImageProduct.getProductId() == null || bizImageProduct.getProductId().isEmpty()) {
+            logger.error("更新失败，productId不能为空");
+            return R.error("productId不能为空");
+        }
+        
+        // 检查记录是否存在
+        BizImageProduct existingProduct = bizImageProductService.getById(bizImageProduct.getProductId());
+        if (existingProduct == null) {
+            logger.warn("产品图片不存在，无法更新，productId: {}", bizImageProduct.getProductId());
+            return R.error("产品图片不存在，无法更新");
+        }
+        
+        // 检查记录是否已删除
+        if (existingProduct.getDeleted() != null && existingProduct.getDeleted() == 1) {
+            logger.warn("产品图片已删除，无法更新，productId: {}", bizImageProduct.getProductId());
+            return R.error("产品图片已删除，无法更新");
+        }
+        
+        // 处理 generatedImages 字段：如果传入了数组，自动计算 generatedImageCount
+        if (bizImageProduct.getGeneratedImages() != null && !bizImageProduct.getGeneratedImages().isEmpty()) {
+            try {
+                // generatedImages 已经被 JsonArrayToStringDeserializer 转换为 JSON 字符串
+                // 解析 JSON 字符串获取数组长度
+                JSONArray imagesArray = JSON.parseArray(bizImageProduct.getGeneratedImages());
+                if (imagesArray != null) {
+                    bizImageProduct.setGeneratedImageCount(imagesArray.size());
+                    logger.info("自动计算 generatedImageCount: {}", imagesArray.size());
+                }
+            } catch (Exception e) {
+                logger.warn("解析 generatedImages 失败，跳过 generatedImageCount 计算: {}", e.getMessage());
+            }
+        }
+        
+        // 执行更新
         bizImageProduct.setUpdateTime(new Date());
-        bizImageProductService.updateById(bizImageProduct);
-        return R.ok();
+        boolean success = bizImageProductService.updateById(bizImageProduct);
+        
+        if (success) {
+            logger.info("成功更新产品图片，productId: {}", bizImageProduct.getProductId());
+            return R.ok();
+        } else {
+            logger.error("更新产品图片失败，productId: {}", bizImageProduct.getProductId());
+            return R.error("更新失败");
+        }
     }
 
     /**
