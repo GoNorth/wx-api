@@ -24,6 +24,7 @@
         <result column="generated_image_count" property="generatedImageCount"/>
         <result column="generate_error_info" property="generateErrorInfo"/>
         <result column="generate_complete_time" property="generateCompleteTime"/>
+        <result column="generate_feedback" property="generateFeedback"/>
         <result column="deleted" property="deleted"/>
         <result column="create_time" property="createTime"/>
         <result column="update_time" property="updateTime"/>
@@ -52,6 +53,7 @@
             p.generated_image_count,
             p.generate_error_info,
             p.generate_complete_time,
+            p.generate_feedback,
             p.deleted,
             p.create_time,
             p.update_time
