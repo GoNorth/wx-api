@@ -2,6 +2,7 @@ package com.github.niefy.modules.biz.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.niefy.common.utils.Query;
 import com.github.niefy.modules.biz.dao.BizImageTemplateMapper;
@@ -54,9 +55,7 @@ public class BizImageTemplateServiceImpl extends ServiceImpl<BizImageTemplateMap
         String recognitionStatus = (String) params.get("recognitionStatus");
         String formScenarioId = (String) params.get("formScenarioId");
 
-        return this.page(
-            new Query<BizImageTemplate>().getPage(params),
-            new QueryWrapper<BizImageTemplate>()
+        QueryWrapper<BizImageTemplate> queryWrapper = new QueryWrapper<BizImageTemplate>()
                 .eq(StringUtils.hasText(templateId), "template_id", templateId)
                 .eq(StringUtils.hasText(posterType), "poster_type", posterType)
                 .like(StringUtils.hasText(posterName), "poster_name", posterName)
@@ -70,8 +69,25 @@ public class BizImageTemplateServiceImpl extends ServiceImpl<BizImageTemplateMap
                 .eq(StringUtils.hasText(recognitionStatus), "recognition_status", recognitionStatus)
                 .eq(StringUtils.hasText(formScenarioId), "form_scenario_id", formScenarioId)
                 .eq("deleted", 0)
-                .orderByDesc("create_time")
-        );
+                .orderByDesc("create_time");
+
+        // 添加调试日志
+        logger.debug("查询参数: templateId={}, posterType={}, status={}, formScenarioId={}, page={}, limit={}", 
+                templateId, posterType, status, formScenarioId, params.get("page"), params.get("limit"));
+
+        IPage<BizImageTemplate> pageObj = new Query<BizImageTemplate>().getPage(params);
+        IPage<BizImageTemplate> result = this.page(pageObj, queryWrapper);
+        
+        // 如果请求的页码超出总页数，且总页数大于0，则重新查询第1页
+        if (result.getRecords().isEmpty() && result.getTotal() > 0 && result.getCurrent() > result.getPages()) {
+            logger.debug("请求页码 {} 超出总页数 {}，自动返回第1页", result.getCurrent(), result.getPages());
+            Page<BizImageTemplate> firstPage = new Page<>(1, pageObj.getSize());
+            result = this.page(firstPage, queryWrapper);
+        }
+        
+        logger.debug("查询结果总数: {}, 当前页记录数: {}", result.getTotal(), result.getRecords().size());
+        
+        return result;
     }
 
     @Override

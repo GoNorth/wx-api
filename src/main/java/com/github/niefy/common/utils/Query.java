@@ -24,10 +24,20 @@ public class Query<T> {
         long limit = 10;
 
         if (params.get(Constant.PAGE) != null) {
-            curPage = Long.parseLong((String) params.get(Constant.PAGE));
+            Object pageObj = params.get(Constant.PAGE);
+            if (pageObj instanceof String) {
+                curPage = Long.parseLong((String) pageObj);
+            } else if (pageObj instanceof Number) {
+                curPage = ((Number) pageObj).longValue();
+            }
         }
         if (params.get(Constant.LIMIT) != null) {
-            limit = Long.parseLong((String) params.get(Constant.LIMIT));
+            Object limitObj = params.get(Constant.LIMIT);
+            if (limitObj instanceof String) {
+                limit = Long.parseLong((String) limitObj);
+            } else if (limitObj instanceof Number) {
+                limit = ((Number) limitObj).longValue();
+            }
         }
 
         //分页对象

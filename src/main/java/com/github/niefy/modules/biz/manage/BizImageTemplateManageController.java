@@ -209,7 +209,8 @@ public class BizImageTemplateManageController {
             ));
         }
         
-        bizImageTemplateService.save(bizImageTemplate);
+        // 使用 saveOrUpdate 方法，自动判断是新增还是更新
+        bizImageTemplateService.saveOrUpdate(bizImageTemplate);
         
         // 保存成功后，更新向量数据
         updateEmbeddingAsync(bizImageTemplate.getTemplateId());
