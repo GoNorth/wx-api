@@ -52,6 +52,7 @@ public class BizImageTemplateServiceImpl extends ServiceImpl<BizImageTemplateMap
         String taskId = (String) params.get("taskId");
         String templateNo = (String) params.get("templateNo");
         String recognitionStatus = (String) params.get("recognitionStatus");
+        String formScenarioId = (String) params.get("formScenarioId");
 
         return this.page(
             new Query<BizImageTemplate>().getPage(params),
@@ -67,6 +68,7 @@ public class BizImageTemplateServiceImpl extends ServiceImpl<BizImageTemplateMap
                 .eq(StringUtils.hasText(taskId), "task_id", taskId)
                 .eq(StringUtils.hasText(templateNo), "template_no", templateNo)
                 .eq(StringUtils.hasText(recognitionStatus), "recognition_status", recognitionStatus)
+                .eq(StringUtils.hasText(formScenarioId), "form_scenario_id", formScenarioId)
                 .eq("deleted", 0)
                 .orderByDesc("create_time")
         );
