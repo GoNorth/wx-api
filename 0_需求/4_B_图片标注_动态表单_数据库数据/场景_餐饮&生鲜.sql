@@ -224,6 +224,68 @@ INSERT INTO `biz_form_component` (
   NOW()
 );
 
+# 8. 人物形象类型
+INSERT INTO `biz_form_component` (
+  `component_id`,
+  `component_type`,
+  `component_code`,
+  `component_name`,
+  `component_label`,
+  `component_desc`,
+  `component_config`,
+  `options_config`,
+  `sort_order`,
+  `status`,
+  `deleted`,
+  `create_time`,
+  `update_time`
+) VALUES (
+  'comp_010',
+  'SELECT',
+  'character_type',
+  '人物形象类型',
+  '人物形象类型',
+  '下拉选择框，用于选择人物形象类型',
+  '{"placeholder":"请选择人物形象类型","required":false}',
+  '[{"label":"3D","value":"3D"},{"label":"真人","value":"真人"},{"label":"卡通","value":"卡通"},{"label":"写实","value":"写实"},{"label":"插画","value":"插画"},{"label":"水彩","value":"水彩"},{"label":"油画","value":"油画"},{"label":"简约","value":"简约"},{"label":"复古","value":"复古"},{"label":"现代","value":"现代"},{"label":"国风","value":"国风"},{"label":"日系","value":"日系"},{"label":"欧美","value":"欧美"}]',
+  8,
+  'ACTIVE',
+  0,
+  NOW(),
+  NOW()
+);
+
+# 9. 人物形象描述
+INSERT INTO `biz_form_component` (
+  `component_id`,
+  `component_type`,
+  `component_code`,
+  `component_name`,
+  `component_label`,
+  `component_desc`,
+  `component_config`,
+  `options_config`,
+  `sort_order`,
+  `status`,
+  `deleted`,
+  `create_time`,
+  `update_time`
+) VALUES (
+  'comp_011',
+  'TEXTAREA',
+  'character_desc',
+  '人物形象描述',
+  '人物形象描述',
+  '多行文本输入框，用于输入人物形象描述',
+  '{"placeholder":"请输入人物形象描述","required":false,"maxLength":512,"rows":4}',
+  NULL,
+  9,
+  'ACTIVE',
+  0,
+  NOW(),
+  NOW()
+);
+
 # biz_form_scenario 表示例数据
 
 # 1. 生鲜场景
@@ -274,7 +336,7 @@ INSERT INTO `biz_form_scenario` (
 
 # biz_form_scenario_component 表示例数据
 
-# 组件绑定顺序：1.product_name, 2.product_price, 3.promotion_input, 4.style_type, 5.festival_theme, 6.seasonal_name, 7.age_level
+# 组件绑定顺序：1.product_name, 2.product_price, 3.promotion_input, 4.style_type, 5.festival_theme, 6.seasonal_name, 7.age_level, 8.character_type, 9.character_desc
 
 # 生鲜场景的组件关联
 INSERT INTO `biz_form_scenario_component` (
@@ -294,7 +356,9 @@ INSERT INTO `biz_form_scenario_component` (
 ('rel_001_008', 'scenario_001', 'comp_008', NULL, 4, 'ACTIVE', 0, NOW(), NOW()),
 ('rel_001_007', 'scenario_001', 'comp_007', NULL, 5, 'ACTIVE', 0, NOW(), NOW()),
 ('rel_001_002', 'scenario_001', 'comp_002', NULL, 6, 'ACTIVE', 0, NOW(), NOW()),
-('rel_001_009', 'scenario_001', 'comp_009', NULL, 7, 'ACTIVE', 0, NOW(), NOW());
+('rel_001_009', 'scenario_001', 'comp_009', NULL, 7, 'ACTIVE', 0, NOW(), NOW()),
+('rel_001_010', 'scenario_001', 'comp_010', NULL, 8, 'ACTIVE', 0, NOW(), NOW()),
+('rel_001_011', 'scenario_001', 'comp_011', NULL, 9, 'ACTIVE', 0, NOW(), NOW());
 
 # 餐饮场景的组件关联
 INSERT INTO `biz_form_scenario_component` (
@@ -314,4 +378,6 @@ INSERT INTO `biz_form_scenario_component` (
 ('rel_002_008', 'scenario_002', 'comp_008', NULL, 4, 'ACTIVE', 0, NOW(), NOW()),
 ('rel_002_007', 'scenario_002', 'comp_007', NULL, 5, 'ACTIVE', 0, NOW(), NOW()),
 ('rel_002_002', 'scenario_002', 'comp_002', NULL, 6, 'ACTIVE', 0, NOW(), NOW()),
-('rel_002_009', 'scenario_002', 'comp_009', NULL, 7, 'ACTIVE', 0, NOW(), NOW());
+('rel_002_009', 'scenario_002', 'comp_009', NULL, 7, 'ACTIVE', 0, NOW(), NOW()),
+('rel_002_010', 'scenario_002', 'comp_010', NULL, 8, 'ACTIVE', 0, NOW(), NOW()),
+('rel_002_011', 'scenario_002', 'comp_011', NULL, 9, 'ACTIVE', 0, NOW(), NOW());
