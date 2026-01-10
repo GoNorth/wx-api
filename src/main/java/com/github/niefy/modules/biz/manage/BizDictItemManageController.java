@@ -38,6 +38,9 @@ public class BizDictItemManageController {
     
     @Autowired
     private BizDictTypeService bizDictTypeService;
+    
+    @Autowired
+    private com.github.niefy.modules.biz.service.BizScenarioDictTypeService bizScenarioDictTypeService;
 
     /**
      * 列表
@@ -47,6 +50,17 @@ public class BizDictItemManageController {
     public R list(@RequestParam Map<String, Object> params) {
         // 如果指定了dictTypeCode，优先返回list而不是page
         String dictTypeCode = (String) params.get("dictTypeCode");
+        String scenarioId = (String) params.get("scenarioId");
+        
+        // 如果指定了场景ID，需要检查该场景是否绑定了该字典类型
+        if (StringUtils.hasText(scenarioId) && StringUtils.hasText(dictTypeCode)) {
+            boolean isBound = bizScenarioDictTypeService.isBound(scenarioId, dictTypeCode);
+            if (!isBound) {
+                // 如果未绑定，返回空列表
+                return R.ok().put("list", new java.util.ArrayList<>());
+            }
+        }
+        
         if (StringUtils.hasText(dictTypeCode)) {
             List<BizDictItem> list = bizDictItemService.list(
                 new QueryWrapper<BizDictItem>()

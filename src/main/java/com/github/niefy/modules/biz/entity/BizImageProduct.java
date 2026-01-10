@@ -144,6 +144,21 @@ public class BizImageProduct implements Serializable {
     private String generateFeedback;
 
     /**
+     * 准备动态表单字段，JSON格式存储
+     */
+    private String dynamicFormFields;
+
+    /**
+     * 准备动态表单-提示词（用于发送给API的prompt参数）
+     */
+    private String dynamicFormPrompt;
+
+    /**
+     * 动态参数表格，JSON格式存储
+     */
+    private String dynamicParams;
+
+    /**
      * 逻辑删除标记字典CODE：0-NOT_DELETED未删除，1-DELETED已删除
      */
     private Integer deleted;
