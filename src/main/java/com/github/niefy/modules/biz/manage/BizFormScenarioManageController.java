@@ -212,12 +212,27 @@ public class BizFormScenarioManageController {
                 componentConfig.put("componentDesc", component.getComponentDesc());
                 
                 // 合并组件配置（默认配置 + 场景覆盖配置）
-                JSONObject defaultConfig = StringUtils.hasText(component.getComponentConfig()) 
-                        ? JSON.parseObject(component.getComponentConfig()) 
-                        : new JSONObject();
-                JSONObject overrideConfig = StringUtils.hasText(relation.getComponentConfigOverride()) 
-                        ? JSON.parseObject(relation.getComponentConfigOverride()) 
-                        : new JSONObject();
+                JSONObject defaultConfig = new JSONObject();
+                if (StringUtils.hasText(component.getComponentConfig())) {
+                    try {
+                        defaultConfig = JSON.parseObject(component.getComponentConfig());
+                    } catch (Exception e) {
+                        logger.warn("解析组件默认配置失败，componentId: {}, config: {}", 
+                                component.getComponentId(), component.getComponentConfig(), e);
+                        defaultConfig = new JSONObject();
+                    }
+                }
+                
+                JSONObject overrideConfig = new JSONObject();
+                if (StringUtils.hasText(relation.getComponentConfigOverride())) {
+                    try {
+                        overrideConfig = JSON.parseObject(relation.getComponentConfigOverride());
+                    } catch (Exception e) {
+                        logger.warn("解析组件覆盖配置失败，relationId: {}, config: {}", 
+                                relation.getRelationId(), relation.getComponentConfigOverride(), e);
+                        overrideConfig = new JSONObject();
+                    }
+                }
                 
                 // 合并配置（覆盖配置优先）
                 JSONObject mergedConfig = new JSONObject();
