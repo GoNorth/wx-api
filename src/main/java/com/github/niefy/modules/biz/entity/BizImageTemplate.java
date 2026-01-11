@@ -132,6 +132,11 @@ public class BizImageTemplate implements Serializable {
     private String multimodalPrompt;
 
     /**
+     * 表单参数匹配结果，保存匹配出的参数key列表（如：comp_002、comp_004等）
+     */
+    private String formParamMatchResult;
+
+    /**
      * 识别错误信息
      */
     private String recognitionErrorInfo;
